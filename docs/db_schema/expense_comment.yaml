@@ -1,0 +1,45 @@
+table: expense_comment
+purpose: 사업비용 건에 대한 코멘트. 세무사/내부 검토자 메모 공유.
+section: 3-H 사업비용/증빙
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: expense_id
+    type: UUID
+    nullable: false
+  - name: author_id
+    type: UUID
+    nullable: false
+  - name: body
+    type: TEXT
+    nullable: false
+  - name: posted_at
+    type: TIMESTAMPTZ
+    nullable: false
+    default: now()
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: ix_expense_comment_eid_time
+    type: INDEX
+    columns: [expense_id, posted_at DESC]
+
+foreign_keys:
+  - column: expense_id
+    references: expenses.id
+  - column: author_id
+    references: app_user.id
+
+referenced_by: []
+
+notes: |
+  - ACCOUNTANT_COMMENT 알림 (notification.kind) 의 source.

@@ -1,0 +1,58 @@
+table: partner
+purpose: 조직 내 수익배분 대상자 N명. app_user 와 별도 (정산 대상은 시스템 사용자가 아닐 수 있음).
+section: 3-A 조직/사용자
+decisions: [D-280]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: name
+    type: TEXT
+    nullable: false
+  - name: display_order
+    type: INT
+    nullable: false
+    default: 0
+  - name: linked_user_id
+    type: UUID
+    nullable: true
+    note: 해당 partner 가 시스템 사용자인 경우의 매핑. nullable — 비사용자 partner 허용.
+  - name: is_active
+    type: BOOLEAN
+    nullable: false
+    default: TRUE
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: uq_partner_org_name
+    type: UNIQUE
+    columns: [org_id, name]
+    where: deleted_at IS NULL
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: linked_user_id
+    references: app_user.id
+    nullable: true
+
+referenced_by:
+  - partner_share_policy.partner_id
+  - partner_settlement.partner_id
+  - expenses.payment_card_holder_id
+  - expenses.attributable_partner_id
+
+notes: |
+  - D-280: N명 파트너 구조. business_type 별 분배 규칙 (SOLE 1명, JOINT 2+, CORP 주주, TEAM 자유).
+  - linked_user_id 가 있어도 partner 가 우선 (정산 분배는 시스템 사용자 기준이 아님).
+  - 비활성 partner 는 is_active=FALSE — 과거 정산 보존을 위해 hard delete 지양.

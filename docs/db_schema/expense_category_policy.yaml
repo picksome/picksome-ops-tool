@@ -1,0 +1,52 @@
+table: expense_category_policy
+purpose: 사업비용 카테고리 마스터. expenses.category_id 가 참조.
+section: 3-B 정책
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: name
+    type: TEXT
+    nullable: false
+  - name: kind
+    type: enum_expense_category_kind
+    nullable: false
+    enum_values: [COGS, MARKETING, LOGISTICS, OFFICE, UTILITY, LABOR, TAX, FEE, SUBSCRIPTION, OTHER]
+  - name: default_tax_deductible
+    type: BOOLEAN
+    nullable: false
+    default: TRUE
+    note: 비용 등록 시 기본 세무공제 가능 여부 — expense 단위로 override 가능
+  - name: default_settlement_deductible
+    type: BOOLEAN
+    nullable: false
+    default: TRUE
+    note: 정산 분배 시 공통비용으로 차감되는지 — expense 단위로 override 가능
+  - name: sort_order
+    type: INT
+    nullable: false
+    default: 0
+
+audit_columns: true
+policy_columns: true
+
+constraints: []
+
+indexes:
+  - name: uq_ecp_org_name_ver
+    type: UNIQUE
+    columns: [org_id, name, version]
+    where: deleted_at IS NULL
+
+foreign_keys: []
+
+referenced_by:
+  - expenses.category_id
+
+notes: |
+  - SYSTEM 템플릿이 표준 카테고리 9~10종 제공. 신규 조직은 INSERT...SELECT 복사.
+  - tax/settlement deductible 기본값은 카테고리 정책. 개별 expense 는 override 가능.

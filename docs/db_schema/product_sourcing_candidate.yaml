@@ -1,0 +1,73 @@
+table: product_sourcing_candidate
+purpose: 소싱 후보 상품. APPROVED 시 product 로 승격 (product_id 연결).
+section: 3-E 상품/옵션
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: product_id
+    type: UUID
+    nullable: true
+    note: 승격 시 연결. CANDIDATE 단계에서는 NULL
+  - name: supplier_url
+    type: TEXT
+    nullable: false
+  - name: supplier_name_snapshot
+    type: TEXT
+    nullable: true
+  - name: supply_price
+    type: BIGINT
+    nullable: true
+    note: 원 단위 정수 (KRW) 또는 외화 (cost_currency 없이 단순 보관)
+  - name: moq
+    type: INT
+    nullable: true
+    note: 최소발주수량 (Minimum Order Quantity)
+  - name: category_path
+    type: TEXT
+    nullable: true
+  - name: candidate_status
+    type: enum_sourcing_status
+    nullable: false
+    default: CANDIDATE
+    enum_values: [CANDIDATE, APPROVED, REJECTED]
+  - name: rejected_reason
+    type: TEXT
+    nullable: true
+  - name: simulated_margin_json
+    type: JSONB
+    nullable: true
+    note: 시뮬레이션 결과 박제
+  - name: memo
+    type: TEXT
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: ix_psc_org_status
+    type: INDEX
+    columns: [org_id, candidate_status]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: product_id
+    references: product.id
+    nullable: true
+
+referenced_by: []
+
+notes: |
+  - 소싱 워크플로의 초기 단계. 1차 시뮬레이션 후 APPROVED 시 product 생성.
+  - simulated_margin_json 은 후보 단계의 마진 추정 (실제 박제는 product_margin_expected).

@@ -1,0 +1,83 @@
+table: integration_account
+purpose: 외부 시스템(API pull) + 봇(push) 연동 계정 슬롯. M009 에서 착수(Post-MVP 딱지 해제).
+section: 3-L 외부 연동
+decisions: [D-289, D-290]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: provider
+    type: TEXT
+    nullable: false
+    note: e.g. "COUPANG_WING", "SMARTSTORE_API", "BOT_GENERIC"
+  - name: account_label
+    type: TEXT
+    nullable: false
+  - name: sale_channel_id
+    type: UUID
+    nullable: true
+    note: M009 — 이 연동이 어느 판매채널(sale_channel) 것인지
+  - name: auth_kind
+    type: TEXT
+    nullable: false
+    default: "'API_KEY'"
+    note: "API_KEY / OAUTH / BOT_TOKEN. MVP 는 API_KEY 만 실제 지원(D-289) — OAUTH/BOT_TOKEN 은 값만 예약"
+  - name: config_json
+    type: JSONB
+    nullable: true
+    note: 마켓별 커스텀 설정(엔드포인트 URL 등). 필드 매핑 DSL 은 범위 밖(D-290)
+  - name: api_key_hash
+    type: TEXT
+    nullable: true
+    note: >-
+      봇 ingest 인증용 argon2 해시(core.security.hash_password 재사용). 평문은
+      발급 응답(POST /integrations)에서 1회만 노출, DB 미저장(CLAUDE.md Security).
+  - name: credentials_vault_entry_id
+    type: UUID
+    nullable: true
+    note: >-
+      M009 에서 NULLABLE 로 변경 — API_KEY/BOT_TOKEN 계정은 우리가 발급한 키의
+      해시만 저장하므로 3자 vault 참조가 불필요. OAuth 등 실제 외부 로그인 계정만 사용.
+  - name: status
+    type: TEXT
+    nullable: false
+    default: "'INACTIVE'"
+    note: INACTIVE / ACTIVE / ERROR
+  - name: last_synced_at
+    type: TIMESTAMPTZ
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints:
+  - name: ck_integration_account_auth_kind
+    type: CHECK
+    expression: "auth_kind IN ('API_KEY', 'OAUTH', 'BOT_TOKEN')"
+
+indexes: []
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: sale_channel_id
+    references: sale_channel.id
+    nullable: true
+  - column: credentials_vault_entry_id
+    references: password_vault_entry.id
+    nullable: true
+
+referenced_by:
+  - integration_job.account_id
+  - external_product_mapping.account_id
+
+notes: |
+  - M009 에서 실제 착수: services/integration_account.py::create_bot_account() 로 발급,
+    POST /integrations/{id}/ingest/orders 가 api_key_hash 로 봇 요청을 검증(D-289).
+  - credentials 평문 저장 금지 (CLAUDE.md Security) — vault entry 또는 해시 참조만.

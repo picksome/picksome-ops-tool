@@ -1,0 +1,42 @@
+table: partner_share_policy
+purpose: 파트너별 수익 분배 비율. 월별 override 가능 (applies_year_month 로 특정 월만 적용).
+section: 3-B 정책
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: partner_id
+    type: UUID
+    nullable: false
+  - name: share_ratio
+    type: NUMERIC(7,4)
+    nullable: false
+    note: 4자리 소수 비율 (0.5000 = 50%). 동일 effective 기간 partner 들의 합 = 1.0
+  - name: applies_year_month
+    type: TEXT
+    nullable: true
+    note: 특정 월 override (YYYY-MM). NULL 이면 기본 비율.
+
+audit_columns: true
+policy_columns: true
+
+constraints: []
+
+indexes:
+  - name: ix_psp_org_eff
+    type: INDEX
+    columns: [org_id, effective_from DESC]
+
+foreign_keys:
+  - column: partner_id
+    references: partner.id
+
+referenced_by: []
+
+notes: |
+  - CLAUDE.md: 기본 1:1, 월별 override 가능. 합 = 1.0 검증은 앱 단.
+  - SOLE_PROPRIETOR org 는 partner 1명 + share_ratio = 1.0000.

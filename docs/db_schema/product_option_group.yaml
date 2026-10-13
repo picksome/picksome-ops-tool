@@ -1,0 +1,51 @@
+table: product_option_group
+purpose: 상품의 옵션 그룹 (예 "색상", "사이즈"). product 1:N option_group.
+section: 3-E 상품/옵션
+decisions: [D-286]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: product_id
+    type: UUID
+    nullable: false
+  - name: name
+    type: TEXT
+    nullable: false
+    note: 그룹명 (e.g. "색상")
+  - name: sort_order
+    type: INT
+    nullable: false
+    default: 0
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: uq_pog_product_name
+    type: UNIQUE
+    columns: [product_id, name]
+    where: deleted_at IS NULL
+  - name: ix_pog_product_sort
+    type: INDEX
+    columns: [product_id, sort_order]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: product_id
+    references: product.id
+
+referenced_by:
+  - product_option_value.option_group_id
+
+notes: |
+  - D-286: 옵션 정규화 3테이블 중 1번. value 와 variant 와 함께 사용.

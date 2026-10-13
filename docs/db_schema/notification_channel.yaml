@@ -1,0 +1,56 @@
+table: notification_channel
+purpose: 알림 채널 메타 마스터. 채널 코드별 adapter 클래스 / MVP 활성 여부 / 필요 config 정의.
+section: 3-K 알림
+decisions: [D-281]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: code
+    type: enum_notification_channel_code
+    nullable: false
+    enum_values: [EMAIL, IN_APP, KAKAO, SLACK, TELEGRAM, WEBHOOK]
+    decision: D-281
+    note: UNIQUE
+  - name: display_name
+    type: TEXT
+    nullable: false
+  - name: adapter_class
+    type: TEXT
+    nullable: false
+    note: 백엔드 어댑터 클래스 풀네임 (e.g. "app.notifications.adapters.EmailAdapter")
+  - name: is_mvp_active
+    type: BOOLEAN
+    nullable: false
+    default: FALSE
+    decision: D-281
+    note: D-281 — MVP 는 EMAIL + IN_APP 만 TRUE
+  - name: requires_config_json
+    type: JSONB
+    nullable: false
+    default: "'[]'"
+    note: 채널 활성화에 필요한 env/config 키 목록
+  - name: sort_order
+    type: INT
+    nullable: false
+    default: 0
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys: []
+
+referenced_by:
+  - notification.channel_code (코드 enum 값으로 결합 — FK 는 enum)
+
+notes: |
+  - D-281: MVP 알림 = EMAIL + IN_APP. KAKAO/SLACK/TELEGRAM/WEBHOOK 은 Post-MVP 슬롯.
+  - M002 baseline 이 6 row 적재. code 컬럼만 UNIQUE (id 외 자연키).
+  - org 별 row 아님 — 시스템 글로벌. 채널 활성/비활성은 org 별 notification_pref 에서.

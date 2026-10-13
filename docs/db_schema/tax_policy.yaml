@@ -1,0 +1,68 @@
+table: tax_policy
+purpose: 세금/부가세 정책. 사업자 형태별·과세 유형별 계산 방식과 VAT 률을 정의.
+section: 3-B 정책
+decisions: [D-280, D-284]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: tax_type
+    type: enum_tax_type
+    nullable: false
+    enum_values: [GENERAL, SIMPLE, EXEMPT]
+  - name: business_type
+    type: enum_business_type
+    nullable: true
+    enum_values: [SOLE_PROPRIETOR, JOINT_BUSINESS, CORPORATION, TEAM_OPERATION]
+    decision: D-280
+    note: 사업자 형태별 별도 세 정책 — NULL = 모든 형태 공통
+  - name: vat_rate
+    type: NUMERIC(7,4)
+    nullable: false
+    default: 0.1000
+    note: 4자리 소수 비율 (0.1000 = 10%)
+  - name: calculation_method
+    type: enum_tax_calc_method
+    nullable: false
+    default: STANDARD_RATIO
+    enum_values: [STANDARD_RATIO, SIMPLE_DEEMED, EXEMPT, OVERSEAS_ZERO_RATED]
+    decision: D-284
+  - name: default_vat_inclusion
+    type: enum_vat_inclusion_type
+    nullable: false
+    default: INCLUDED
+    enum_values: [INCLUDED, EXCLUDED, EXEMPT]
+    decision: D-284
+  - name: applies_to
+    type: TEXT
+    nullable: false
+    note: 적용 대상 (e.g. "SALES", "PURCHASE", "EXPENSE")
+
+audit_columns: true
+policy_columns: true
+
+constraints: []
+
+indexes:
+  - name: uq_tax_policy_unique
+    type: UNIQUE
+    columns: [org_id, tax_type, "COALESCE(business_type::text, '')", applies_to, version]
+    where: deleted_at IS NULL
+  - name: ix_tax_policy_org_eff
+    type: INDEX
+    columns: [org_id, effective_from DESC]
+    where: effective_to IS NULL
+
+foreign_keys: []
+
+referenced_by:
+  - sales_order.tax_policy_id
+  - expenses.tax_policy_id
+
+notes: |
+  - D-284: tax_policy 확장 — vat_inclusion_type, calculation_method 추가.
+  - sales_order / expenses 가 tax_policy_id 스냅샷을 박제해서 정책 변경 후에도 과거 계산 재현.
+  - SIMPLE_DEEMED: 간이과세 deemed VAT. OVERSEAS_ZERO_RATED: 해외직구 영세율.

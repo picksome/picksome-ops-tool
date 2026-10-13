@@ -1,0 +1,40 @@
+table: settlement_policy
+purpose: 월별 정산 규칙 — 적자 처리, 우선분배, 정산 마감일.
+section: 3-B 정책
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: loss_policy
+    type: TEXT
+    nullable: false
+    default: "'CARRYOVER'"
+    note: 적자 처리 정책. 기본 CARRYOVER (다음 흑자월에서 우선 차감)
+  - name: priority_distribution_json
+    type: JSONB
+    nullable: true
+    note: 우선 분배 정의 (partner_id → fixed amount, 비율 계산 전 적용)
+  - name: close_day
+    type: INT
+    nullable: false
+    default: 5
+    note: 익월 정산 마감일
+
+audit_columns: true
+policy_columns: true
+
+constraints: []
+
+indexes: []
+
+foreign_keys: []
+
+referenced_by: []
+
+notes: |
+  - CLAUDE.md Settlement Model: 매출이 아닌 순이익 기준 분배. carryover 가 기본.
+  - close_day=5 → 익월 5일 정산 마감.

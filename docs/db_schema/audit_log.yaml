@@ -1,0 +1,71 @@
+table: audit_log
+purpose: 도메인 row 변경의 감사 기록. 전 테이블 공통 audit trail.
+section: 3-J 감사
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: domain_table
+    type: TEXT
+    nullable: false
+  - name: domain_row_id
+    type: UUID
+    nullable: false
+  - name: action
+    type: enum_audit_action
+    nullable: false
+    enum_values: [CREATE, UPDATE, DELETE, RESTORE, STATUS_CHANGE, POLICY_OVERRIDE, LOGIN, LOGOUT, PERMISSION_CHANGE, EXPORT, IMPORT]
+  - name: actor_user_id
+    type: UUID
+    nullable: true
+    note: 시스템 이벤트는 NULL
+  - name: occurred_at
+    type: TIMESTAMPTZ
+    nullable: false
+    default: now()
+  - name: before_json
+    type: JSONB
+    nullable: true
+  - name: after_json
+    type: JSONB
+    nullable: true
+  - name: reason
+    type: TEXT
+    nullable: true
+  - name: request_id
+    type: TEXT
+    nullable: true
+    note: HTTP request 추적용
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: ix_audit_org_table_row_time
+    type: INDEX
+    columns: [org_id, domain_table, domain_row_id, occurred_at DESC]
+  - name: ix_audit_org_time
+    type: INDEX
+    columns: [org_id, occurred_at DESC]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: actor_user_id
+    references: app_user.id
+    nullable: true
+
+referenced_by: []
+
+notes: |
+  - policy_change_history 와 별개. audit_log = 도메인 (sales/expense 등), policy_change_history = 정책.
+  - LOCKED 정산 변경 시도 등 보안 이벤트도 여기 기록.

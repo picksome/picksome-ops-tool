@@ -1,0 +1,52 @@
+table: policy_snapshot
+purpose: 마진/정산 계산 시점에 적용된 정책 묶음의 박제 헤더. 계산 row 가 snapshot_id 로 참조.
+section: 3-B 정책 부속
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: owner_kind
+    type: TEXT
+    nullable: false
+    note: 박제 주체 (e.g. "product_margin_expected", "monthly_settlement")
+  - name: owner_id
+    type: UUID
+    nullable: false
+  - name: computed_at
+    type: TIMESTAMPTZ
+    nullable: false
+    default: now()
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: ix_ps_owner
+    type: INDEX
+    columns: [owner_kind, owner_id]
+  - name: ix_ps_org_time
+    type: INDEX
+    columns: [org_id, computed_at DESC]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+
+referenced_by:
+  - policy_snapshot_ref.snapshot_id
+  - policy_snapshot_value.snapshot_id
+  - product_margin_expected.snapshot_id
+  - monthly_settlement.snapshot_id
+
+notes: |
+  - CLAUDE.md: 모든 계산 결과는 사용된 정책 snapshot 을 기록 → 과거 재현 가능.
+  - snapshot 자체는 계산 시점에 1회 생성, 이후 immutable.

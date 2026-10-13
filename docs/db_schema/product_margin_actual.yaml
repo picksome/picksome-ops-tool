@@ -1,0 +1,118 @@
+table: product_margin_actual
+purpose: 실제 판매 후 정산 받은 결과 기반 마진. expected 와 비교해 delta 산출.
+section: 3-F 마진
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: product_id
+    type: UUID
+    nullable: false
+  - name: product_variant_id
+    type: UUID
+    nullable: true
+  - name: sales_order_id
+    type: UUID
+    nullable: false
+    note: UNIQUE — sales_order 1건당 actual 1건
+  - name: settlement_record_id
+    type: UUID
+    nullable: true
+  - name: actual_revenue
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: actual_cost
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: actual_marketplace_fee
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: actual_payment_fee
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: actual_ad_cost
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: actual_fulfillment_fee
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: actual_return_cost
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: actual_vat
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: actual_margin_amount
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: actual_margin_rate
+    type: NUMERIC(7,4)
+    nullable: false
+    note: 4자리 소수 비율 (0.1234 = 12.34%)
+  - name: matched_expected_id
+    type: UUID
+    nullable: true
+  - name: delta_margin_amount
+    type: BIGINT
+    nullable: true
+    note: actual - expected. 원 단위 정수 (KRW)
+  - name: delta_margin_rate
+    type: NUMERIC(7,4)
+    nullable: true
+    note: 4자리 소수 비율 차이
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: ix_pma_org_product
+    type: INDEX
+    columns: [org_id, product_id]
+  - name: ix_pma_sales_order
+    type: INDEX
+    columns: [sales_order_id]
+  - name: ix_pma_matched
+    type: INDEX
+    columns: [matched_expected_id]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: product_id
+    references: product.id
+  - column: product_variant_id
+    references: product_variant.id
+    nullable: true
+  - column: sales_order_id
+    references: sales_order.id
+    unique: true
+  - column: settlement_record_id
+    references: marketplace_settlement_record.id
+    nullable: true
+  - column: matched_expected_id
+    references: product_margin_expected.id
+    nullable: true
+
+referenced_by: []
+
+notes: |
+  - `calculate_actual_margin` 함수가 정산 record 가 들어왔을 때 계산.
+  - sales_order 1건 = actual 1건 (UNIQUE). delta 가 큰 row 는 MARGIN_DROP 알림 트리거.

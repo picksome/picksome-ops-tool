@@ -1,0 +1,57 @@
+table: partner_settlement
+purpose: 월별 정산의 파트너별 분배 결과. PRIORITY 와 RATIO 두 종류 분배가 별도 row.
+section: 3-G 판매/정산
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: monthly_settlement_id
+    type: UUID
+    nullable: false
+  - name: partner_id
+    type: UUID
+    nullable: false
+  - name: distribution_kind
+    type: enum_distribution_kind
+    nullable: false
+    enum_values: [PRIORITY, RATIO]
+  - name: amount
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: ratio_used
+    type: NUMERIC(7,4)
+    nullable: true
+    note: RATIO 분배 시 사용된 비율. PRIORITY 면 NULL — 4자리 소수 비율
+  - name: note
+    type: TEXT
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints:
+  - name: uq_part_settle
+    type: UNIQUE
+    columns: [monthly_settlement_id, partner_id, distribution_kind]
+
+indexes:
+  - name: ix_part_settle_partner
+    type: INDEX
+    columns: [partner_id]
+
+foreign_keys:
+  - column: monthly_settlement_id
+    references: monthly_settlement.id
+  - column: partner_id
+    references: partner.id
+
+referenced_by: []
+
+notes: |
+  - PRIORITY (우선 분배) 먼저 차감 → 잔여를 RATIO 분배. 둘 다 동일 partner 에게 갈 수 있음.
+  - 정산 LOCKED 후 변경 불가.

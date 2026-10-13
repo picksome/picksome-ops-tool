@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ERD — PICKSOME OPS TOOL</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#eef2ff',
+      primaryTextColor: '#1e293b',
+      primaryBorderColor: '#6366f1',
+      lineColor: '#6366f1',
+      fontFamily: 'Pretendard, -apple-system, sans-serif'
+    },
+    er: { useMaxWidth: true }
+  });
+</script>
+<style>
+  :root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #eef2ff;
+    --success: #10b981;
+    --success-light: #dcfce7;
+    --warning: #f59e0b;
+    --warning-light: #fef3c7;
+    --danger: #ef4444;
+    --danger-light: #fee2e2;
+    --info: #0ea5e9;
+    --info-light: #e0f2fe;
+    --purple: #8b5cf6;
+    --purple-light: #ede9fe;
+    --pink: #ec4899;
+    --pink-light: #fce7f3;
+    --teal: #14b8a6;
+    --teal-light: #ccfbf1;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-500: #64748b;
+    --gray-700: #334155;
+    --gray-900: #0f172a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    color: var(--gray-900);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  .container { max-width: 1280px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+    color: white;
+    padding: 56px 48px;
+    border-radius: 24px;
+    margin-bottom: 32px;
+    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -30%; right: -10%;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 44px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    letter-spacing: -1px;
+    position: relative;
+  }
+  .hero .subtitle {
+    font-size: 18px;
+    opacity: 0.92;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .hero-meta { display: flex; gap: 32px; flex-wrap: wrap; position: relative; }
+  .hero-meta div { font-size: 13px; opacity: 0.85; }
+  .hero-meta strong { display: block; font-size: 15px; opacity: 1; margin-top: 4px; }
+
+  /* Stats Dashboard */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+    border: 1px solid var(--gray-200);
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-4px); }
+  .stat-value {
+    font-size: 36px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 8px;
+  }
+  .stat-desc { font-size: 11px; color: var(--gray-500); margin-top: 6px; }
+
+  /* TOC */
+  .toc {
+    background: white;
+    border-radius: 16px;
+    padding: 24px 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    border: 1px solid var(--gray-200);
+  }
+  .toc h3 { font-size: 14px; color: var(--gray-500); margin-bottom: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 6px;
+  }
+  .toc a {
+    color: var(--gray-700);
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toc a:hover { background: var(--primary-light); color: var(--primary-dark); }
+  .toc-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Section */
+  section {
+    background: white;
+    border-radius: 20px;
+    padding: 36px 40px;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    border: 1px solid var(--gray-200);
+  }
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--gray-100);
+  }
+  .section-num {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+    color: white;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+  h3 {
+    font-size: 19px;
+    font-weight: 700;
+    margin-top: 24px;
+    margin-bottom: 14px;
+    color: var(--gray-900);
+  }
+  h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 18px;
+    margin-bottom: 10px;
+    color: var(--gray-700);
+  }
+  p { margin-bottom: 10px; color: var(--gray-700); }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 16px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    font-size: 13px;
+  }
+  thead { background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%); }
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 13px;
+    color: var(--gray-700);
+    background: white;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--gray-50); }
+  td code, th code {
+    background: var(--gray-100);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--primary-dark);
+    font-family: 'JetBrains Mono', Consolas, monospace;
+  }
+
+  /* Code blocks */
+  .code-block {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 18px 22px;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    margin: 14px 0;
+    overflow-x: auto;
+    white-space: pre;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+  .code-block .kw { color: #c4b5fd; font-weight: 600; }
+  .code-block .str { color: #fde68a; }
+  .code-block .num { color: #86efac; }
+  .code-block .comment { color: #94a3b8; font-style: italic; }
+
+  /* Enum chips */
+  .enum-group {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+  }
+  .enum-name {
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 13px;
+    color: var(--primary-dark);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .enum-values { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    background: white;
+    border: 1px solid var(--gray-300);
+    color: var(--gray-700);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .chip.confirmed { background: var(--success-light); color: #047857; border-color: var(--success); }
+  .chip.draft { background: var(--warning-light); color: #92400e; border-color: var(--warning); }
+  .chip.locked { background: var(--info-light); color: #0369a1; border-color: var(--info); }
+  .chip.reopened { background: var(--danger-light); color: #991b1b; border-color: var(--danger); }
+  .chip.purple { background: var(--purple-light); color: #6d28d9; border-color: var(--purple); }
+
+  /* Common columns box */
+  .common-box {
+    background: linear-gradient(135deg, var(--primary-light) 0%, white 100%);
+    border: 2px solid var(--primary);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .common-box .common-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .common-box .common-icon { font-size: 20px; }
+
+  /* Domain area cards */
+  .domain-area {
+    border: 2px solid var(--gray-200);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    transition: all 0.2s;
+  }
+  .domain-area:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+  .domain-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px dashed var(--gray-200);
+  }
+  .domain-badge {
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: white;
+  }
+  .domain-title { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+  .domain-area.a { border-color: var(--primary); background: linear-gradient(135deg, #eef2ff 0%, white 60%); }
+  .domain-area.a .domain-badge { background: var(--primary); }
+  .domain-area.b { border-color: var(--purple); background: linear-gradient(135deg, #ede9fe 0%, white 60%); }
+  .domain-area.b .domain-badge { background: var(--purple); }
+  .domain-area.c { border-color: var(--pink); background: linear-gradient(135deg, #fce7f3 0%, white 60%); }
+  .domain-area.c .domain-badge { background: var(--pink); }
+  .domain-area.d { border-color: var(--success); background: linear-gradient(135deg, #dcfce7 0%, white 60%); }
+  .domain-area.d .domain-badge { background: var(--success); }
+  .domain-area.e { border-color: var(--warning); background: linear-gradient(135deg, #fef3c7 0%, white 60%); }
+  .domain-area.e .domain-badge { background: var(--warning); }
+  .domain-area.f { border-color: var(--info); background: linear-gradient(135deg, #e0f2fe 0%, white 60%); }
+  .domain-area.f .domain-badge { background: var(--info); }
+  .domain-area.g { border-color: var(--teal); background: linear-gradient(135deg, #ccfbf1 0%, white 60%); }
+  .domain-area.g .domain-badge { background: var(--teal); }
+  .domain-area.h { border-color: var(--danger); background: linear-gradient(135deg, #fee2e2 0%, white 60%); }
+  .domain-area.h .domain-badge { background: var(--danger); }
+  .domain-area.i { border-color: #06b6d4; background: linear-gradient(135deg, #cffafe 0%, white 60%); }
+  .domain-area.i .domain-badge { background: #06b6d4; }
+  .domain-area.j { border-color: var(--gray-500); background: linear-gradient(135deg, var(--gray-100) 0%, white 60%); }
+  .domain-area.j .domain-badge { background: var(--gray-500); }
+  .domain-area.k { border-color: #f97316; background: linear-gradient(135deg, #ffedd5 0%, white 60%); }
+  .domain-area.k .domain-badge { background: #f97316; }
+
+  /* Entity card */
+  .entity {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .entity-name {
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    background: var(--gray-100);
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .entity-desc { font-size: 13px; color: var(--gray-500); margin-bottom: 10px; }
+  .entity-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .meta-chip {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .meta-chip.index { background: var(--info-light); color: var(--info); }
+  .meta-chip.unique { background: var(--purple-light); color: var(--purple); }
+  .meta-chip.check { background: var(--warning-light); color: #92400e; }
+  .meta-chip.fk { background: var(--success-light); color: #047857; }
+
+  /* Diagram */
+  .diagram {
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    padding: 28px;
+    border-radius: 16px;
+    margin: 16px 0;
+    border: 1px solid var(--gray-200);
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  /* Migration timeline */
+  .migration-list {
+    list-style: none;
+    padding: 0;
+    counter-reset: mig;
+  }
+  .migration-list li {
+    background: linear-gradient(135deg, var(--primary-light) 0%, white 100%);
+    border-left: 4px solid var(--primary);
+    padding: 12px 16px 12px 50px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    position: relative;
+    counter-increment: mig;
+    font-size: 14px;
+    color: var(--gray-700);
+  }
+  .migration-list li::before {
+    content: counter(mig);
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    background: var(--primary);
+    color: white;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* Open Items grid */
+  .open-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .open-card {
+    background: var(--warning-light);
+    border-left: 4px solid var(--warning);
+    padding: 14px 16px;
+    border-radius: 10px;
+  }
+  .open-card .open-id {
+    font-family: monospace;
+    font-size: 12px;
+    background: var(--warning);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 6px;
+  }
+  .open-card .open-title { font-weight: 700; font-size: 14px; color: var(--gray-900); margin-bottom: 4px; }
+  .open-card .open-impact { font-size: 12px; color: var(--gray-700); }
+
+  /* Rule lists */
+  .rule-group { margin-bottom: 20px; }
+  .rule-group h4 {
+    background: var(--gray-100);
+    padding: 10px 14px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+    margin-bottom: 10px;
+  }
+  .rule-list { list-style: none; padding: 0; }
+  .rule-list li {
+    padding: 8px 12px 8px 32px;
+    position: relative;
+    font-size: 13px;
+    color: var(--gray-700);
+    border-bottom: 1px dashed var(--gray-200);
+  }
+  .rule-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 10px;
+    color: var(--success);
+    font-weight: 700;
+  }
+
+  /* Checklist */
+  .checklist { list-style: none; padding: 0; }
+  .checklist li {
+    padding: 8px 12px 8px 36px;
+    position: relative;
+    font-size: 14px;
+    color: var(--gray-700);
+  }
+  .checklist li.done::before {
+    content: '✅';
+    position: absolute;
+    left: 8px;
+  }
+  .checklist li.pending::before {
+    content: '⬜';
+    position: absolute;
+    left: 8px;
+  }
+  .checklist li.pending { color: var(--gray-500); }
+
+  /* Handoff cards */
+  .handoff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin: 14px 0;
+  }
+  .handoff-card {
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+  }
+  .handoff-card h4 {
+    margin-top: 0;
+    color: var(--primary-dark);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .handoff-card ul { padding-left: 20px; font-size: 13px; color: var(--gray-700); }
+  .handoff-card li { margin-bottom: 4px; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--gray-500);
+    font-size: 13px;
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 20px 16px; }
+    .hero { padding: 36px 24px; }
+    .hero h1 { font-size: 30px; }
+    section { padding: 24px; }
+    h2 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">🗄️ Entity Relationship Diagram · DBA</div>
+    <h1>PICKSOME OPS TOOL — ERD</h1>
+    <div class="subtitle">PostgreSQL 16 · 38개 테이블 · 21개 Enum · 정책 Snapshot 하이브리드</div>
+    <div class="hero-meta">
+      <div>작성<strong>DBA</strong></div>
+      <div>작성일<strong>2026-06-17</strong></div>
+      <div>입력<strong>PRD · Schema Design · Decision Log</strong></div>
+      <div>다음<strong>Backend (API + 계산 함수)</strong></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">38</div>
+      <div class="stat-label">Tables</div>
+      <div class="stat-desc">조직·정책·도메인·횡단·연동</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">21</div>
+      <div class="stat-label">Enums</div>
+      <div class="stat-desc">role·status·type 등</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">12</div>
+      <div class="stat-label">Policy Tables</div>
+      <div class="stat-desc">version + effective_*</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">11</div>
+      <div class="stat-label">Domain Areas</div>
+      <div class="stat-desc">3-A ~ 3-K</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">9</div>
+      <div class="stat-label">Seed Items</div>
+      <div class="stat-desc">초기 데이터</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">7</div>
+      <div class="stat-label">Open Items</div>
+      <div class="stat-desc">DDL 직결 미결정</div>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>📑 목차</h3>
+    <div class="toc-grid">
+      <a href="#s0"><span class="toc-num">0</span> Reframed Request</a>
+      <a href="#s1"><span class="toc-num">1</span> 공통 규약</a>
+      <a href="#s2"><span class="toc-num">2</span> Enum 정의</a>
+      <a href="#s3"><span class="toc-num">3</span> 테이블 정의</a>
+      <a href="#s4"><span class="toc-num">4</span> 관계 요약 (ERD)</a>
+      <a href="#s5"><span class="toc-num">5</span> 인덱스 전략</a>
+      <a href="#s6"><span class="toc-num">6</span> 정합성 규칙</a>
+      <a href="#s7"><span class="toc-num">7</span> Migration Plan</a>
+      <a href="#s8"><span class="toc-num">8</span> Open Items 영향</a>
+      <a href="#s9"><span class="toc-num">9</span> Handoff</a>
+      <a href="#s10"><span class="toc-num">10</span> Action Checklist</a>
+    </div>
+  </div>
+
+  <!-- 0. Reframed -->
+  <section id="s0">
+    <h2><span class="section-num">0</span> Reframed Request</h2>
+    <p>PRD 의 <strong>29개 Must Feature</strong>와 <strong>5개 User Flow</strong>를 충족하도록 PostgreSQL 16 기준의 ERD·테이블 정의·컬럼·제약·인덱스·마이그레이션 절차를 확정한다.</p>
+    <h4>📌 Open Items 미결분 가정</h4>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>가정</th></tr></thead>
+      <tbody>
+        <tr><td><code>O-004</code></td><td>ID 타입</td><td><strong>BIGSERIAL</strong> (Inferred — 단일 DB·성능 우선, UUID는 Post-MVP)</td></tr>
+        <tr><td><code>O-005</code></td><td>부가세 자동분리</td><td>DB는 <code>supply</code>/<code>vat</code>/<code>total</code> 3컬럼 모두 보관. 분리 로직은 BE</td></tr>
+        <tr><td><code>O-006</code></td><td>REOPENED 횟수</td><td>제한 없음. <code>reopen_count</code> 카운터만</td></tr>
+        <tr><td><code>O-007</code></td><td>옵션 슬롯</td><td><code>product</code>에 <code>option_dim1/2_label</code>, <code>option_value_1/2</code> 4컬럼 미리 (NULL 허용)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 1. 공통 규약 -->
+  <section id="s1">
+    <h2><span class="section-num">1</span> 공통 규약</h2>
+
+    <h3>1-1. 명명 규칙</h3>
+    <table>
+      <thead><tr><th>항목</th><th>규칙</th></tr></thead>
+      <tbody>
+        <tr><td>테이블</td><td>단수 snake_case (예: <code>product</code>, <code>sales_order</code>)</td></tr>
+        <tr><td>PK</td><td><code>id BIGSERIAL PRIMARY KEY</code></td></tr>
+        <tr><td>FK</td><td><code>&lt;참조테이블&gt;_id</code> (예: <code>product_id</code>)</td></tr>
+        <tr><td>Enum 컬럼</td><td><code>&lt;의미&gt;_status</code>, <code>&lt;의미&gt;_type</code></td></tr>
+        <tr><td>타임스탬프</td><td><code>*_at TIMESTAMPTZ</code> (UTC 저장 → Asia/Seoul 표시)</td></tr>
+        <tr><td>Boolean</td><td><code>is_*</code> (NULL 금지 + DEFAULT)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>1-2. 모든 테이블 공통 컬럼 (7개)</h3>
+    <div class="common-box">
+      <div class="common-title"><span class="common-icon">📋</span> Audit / Soft Delete</div>
+      <table>
+        <thead><tr><th>컬럼</th><th>타입</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>BIGSERIAL PK</td><td>—</td></tr>
+          <tr><td><code>created_at</code></td><td>TIMESTAMPTZ NOT NULL DEFAULT now()</td><td>—</td></tr>
+          <tr><td><code>created_by</code></td><td>BIGINT FK → <code>app_user.id</code> NULL</td><td>시스템 자동행 NULL 허용</td></tr>
+          <tr><td><code>updated_at</code></td><td>TIMESTAMPTZ NOT NULL DEFAULT now()</td><td>트리거 자동 갱신</td></tr>
+          <tr><td><code>updated_by</code></td><td>BIGINT FK → <code>app_user.id</code> NULL</td><td>—</td></tr>
+          <tr><td><code>deleted_at</code></td><td>TIMESTAMPTZ NULL</td><td>soft delete</td></tr>
+          <tr><td><code>deleted_by</code></td><td>BIGINT FK → <code>app_user.id</code> NULL</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>1-3. 금액·비율 타입</h3>
+    <div class="handoff-grid">
+      <div class="handoff-card">
+        <h4>💰 금액</h4>
+        <p style="font-size:13px;"><code>BIGINT</code> (원 단위 정수)<br><code>NUMERIC</code>은 외부 import 원본 보관 한정</p>
+      </div>
+      <div class="handoff-card">
+        <h4>📊 비율</h4>
+        <p style="font-size:13px;"><code>NUMERIC(7,4)</code><br>예: 0.1100 = 11.00%</p>
+      </div>
+      <div class="handoff-card">
+        <h4>🆔 ID</h4>
+        <p style="font-size:13px;"><code>BIGINT</code> (PK = <code>BIGSERIAL</code>)</p>
+      </div>
+      <div class="handoff-card">
+        <h4>💱 통화</h4>
+        <p style="font-size:13px;">단일 <code>KRW</code> 가정<br>컬럼 추가 없음 (Post-MVP 시)</p>
+      </div>
+    </div>
+
+    <h3>1-4. 정책 테이블 공통 컬럼</h3>
+    <div class="common-box" style="background:linear-gradient(135deg, var(--purple-light) 0%, white 100%); border-color: var(--purple);">
+      <div class="common-title" style="color: #6d28d9;"><span class="common-icon">🏷️</span> Policy Common Columns</div>
+      <table>
+        <thead><tr><th>컬럼</th><th>타입</th></tr></thead>
+        <tbody>
+          <tr><td><code>org_id</code></td><td>BIGINT FK → <code>organization.id</code> NOT NULL</td></tr>
+          <tr><td><code>version</code></td><td>INT NOT NULL</td></tr>
+          <tr><td><code>effective_from</code></td><td>DATE NOT NULL</td></tr>
+          <tr><td><code>effective_to</code></td><td>DATE NULL (<code>NULL</code> = 현재 유효)</td></tr>
+          <tr><td><code>source_type</code></td><td>enum_policy_source NOT NULL DEFAULT 'MANUAL'</td></tr>
+          <tr><td><code>source_url</code></td><td>TEXT NULL</td></tr>
+          <tr><td><code>source_checked_at</code></td><td>TIMESTAMPTZ NULL</td></tr>
+          <tr><td><code>approved_by</code></td><td>BIGINT FK → <code>app_user.id</code> NULL</td></tr>
+          <tr><td><code>approved_at</code></td><td>TIMESTAMPTZ NULL</td></tr>
+          <tr><td><code>reliability_status</code></td><td>enum_policy_reliability NOT NULL DEFAULT 'CONFIRMED'</td></tr>
+          <tr><td><code>memo</code></td><td>TEXT NULL</td></tr>
+          <tr><td><code>is_active</code></td><td>BOOLEAN NOT NULL DEFAULT TRUE</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>1-5. 트리거</h3>
+    <ul class="rule-list">
+      <li>모든 테이블: <code>updated_at</code> 자동 갱신 트리거</li>
+      <li>정책 테이블: <code>effective_to</code> 일관성 검사 + 동시기간 중복 검사 트리거</li>
+      <li>Mutation 테이블: <code>audit_log</code> 자동 기록 (옵션) 또는 BE 서비스에서 호출</li>
+    </ul>
+  </section>
+
+  <!-- 2. Enums -->
+  <section id="s2">
+    <h2><span class="section-num">2</span> Enum 정의 (21종)</h2>
+
+    <div class="enum-group">
+      <div class="enum-name">enum_user_role</div>
+      <div class="enum-values">
+        <span class="chip">ADMIN</span><span class="chip">OPERATOR</span><span class="chip">SOURCING</span><span class="chip">ACCOUNTING</span><span class="chip">READONLY</span><span class="chip">EXTERNAL_ACCOUNTANT</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_margin_type</div>
+      <div class="enum-values">
+        <span class="chip">PURCHASE_AGENCY</span><span class="chip">ROCKET_GROWTH</span><span class="chip">OVERSEAS_DIRECT</span><span class="chip">GENERAL_RESELL</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_product_status</div>
+      <div class="enum-values">
+        <span class="chip">CANDIDATE</span><span class="chip">APPROVED</span><span class="chip confirmed">ACTIVE</span><span class="chip draft">PAUSED</span><span class="chip reopened">DISCONTINUED</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_sourcing_status</div>
+      <div class="enum-values">
+        <span class="chip">CANDIDATE</span><span class="chip confirmed">APPROVED</span><span class="chip reopened">REJECTED</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_sale_channel</div>
+      <div class="enum-values">
+        <span class="chip">COUPANG</span><span class="chip">SMARTSTORE</span><span class="chip">ELEVENST</span><span class="chip">GMARKET</span><span class="chip">AUCTION</span><span class="chip">SELF_MALL</span><span class="chip">OTHER</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_settlement_status</div>
+      <div class="enum-values">
+        <span class="chip draft">DRAFT</span><span class="chip confirmed">CONFIRMED</span><span class="chip locked">LOCKED</span><span class="chip reopened">REOPENED</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_evidence_status</div>
+      <div class="enum-values">
+        <span class="chip">NONE</span><span class="chip draft">NEEDS_CHECK</span><span class="chip confirmed">PRESENT</span><span class="chip purple">SUBMITTED_TO_ACCOUNTANT</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_evidence_type</div>
+      <div class="enum-values">
+        <span class="chip">TAX_INVOICE</span><span class="chip">CASH_RECEIPT</span><span class="chip">CARD_SLIP</span><span class="chip">BANK_TRANSFER</span><span class="chip">SIMPLE_RECEIPT</span><span class="chip">SELF_DECLARED</span><span class="chip">OTHER</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_payment_method</div>
+      <div class="enum-values">
+        <span class="chip">BUSINESS_CARD</span><span class="chip">PERSONAL_CARD</span><span class="chip">BANK_TRANSFER</span><span class="chip">CASH</span><span class="chip">OTHER</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_expense_category_kind</div>
+      <div class="enum-values">
+        <span class="chip">COGS</span><span class="chip">MARKETING</span><span class="chip">LOGISTICS</span><span class="chip">OFFICE</span><span class="chip">UTILITY</span><span class="chip">LABOR</span><span class="chip">TAX</span><span class="chip">FEE</span><span class="chip">SUBSCRIPTION</span><span class="chip">OTHER</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_marketplace_fee_type</div>
+      <div class="enum-values">
+        <span class="chip">RATE</span><span class="chip">FIXED</span><span class="chip">TIERED</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_tax_type</div>
+      <div class="enum-values">
+        <span class="chip">GENERAL</span><span class="chip">SIMPLE</span><span class="chip">EXEMPT</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_policy_source</div>
+      <div class="enum-values">
+        <span class="chip">MANUAL</span><span class="chip">CRAWLED</span><span class="chip">API</span><span class="chip">IMPORTED</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_policy_reliability</div>
+      <div class="enum-values">
+        <span class="chip confirmed">CONFIRMED</span><span class="chip">AUTO_DETECTED</span><span class="chip draft">NEEDS_REVIEW</span><span class="chip">EXPIRED</span><span class="chip purple">MANUAL_OVERRIDE</span><span class="chip reopened">DEPRECATED</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_audit_action</div>
+      <div class="enum-values">
+        <span class="chip">CREATE</span><span class="chip">UPDATE</span><span class="chip">DELETE</span><span class="chip">RESTORE</span><span class="chip">STATUS_CHANGE</span><span class="chip">POLICY_OVERRIDE</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_notification_kind</div>
+      <div class="enum-values">
+        <span class="chip">SETTLEMENT_DEADLINE</span><span class="chip">VAT_DEADLINE</span><span class="chip">MARGIN_DROP</span><span class="chip">STOCKOUT_RISK</span><span class="chip">POLICY_REVIEW</span><span class="chip">ACCOUNTANT_COMMENT</span><span class="chip">SYSTEM</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_carryover_event</div>
+      <div class="enum-values">
+        <span class="chip reopened">LOSS_ADDED</span><span class="chip confirmed">OFFSET_APPLIED</span><span class="chip draft">MANUAL_ADJUST</span>
+      </div>
+    </div>
+    <div class="enum-group">
+      <div class="enum-name">enum_distribution_kind</div>
+      <div class="enum-values">
+        <span class="chip purple">PRIORITY</span><span class="chip">RATIO</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Tables -->
+  <section id="s3">
+    <h2><span class="section-num">3</span> 영역별 테이블 정의 (11개 영역)</h2>
+
+    <!-- 3-A 조직 & 사용자 -->
+    <div class="domain-area a">
+      <div class="domain-header">
+        <span class="domain-badge">3-A</span>
+        <span class="domain-title">조직 & 사용자</span>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">organization</div>
+        <div class="entity-desc">조직(사업자) 정보</div>
+        <table>
+          <thead><tr><th>컬럼</th><th>타입</th><th>비고</th></tr></thead>
+          <tbody>
+            <tr><td>business_name</td><td>TEXT NOT NULL</td><td>픽썸 등</td></tr>
+            <tr><td>business_no_masked</td><td>TEXT NULL</td><td>사업자번호 마스킹</td></tr>
+            <tr><td>business_form</td><td>TEXT NULL</td><td>"공동사업자" / "단독"</td></tr>
+            <tr><td>address</td><td>TEXT NULL</td><td>—</td></tr>
+            <tr><td>primary_currency</td><td>TEXT NOT NULL DEFAULT 'KRW'</td><td>—</td></tr>
+            <tr><td>timezone</td><td>TEXT NOT NULL DEFAULT 'Asia/Seoul'</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">app_user</div>
+        <div class="entity-desc">로그인 사용자 + 초대 토큰</div>
+        <table>
+          <thead><tr><th>컬럼</th><th>타입</th><th>비고</th></tr></thead>
+          <tbody>
+            <tr><td>org_id</td><td>BIGINT FK NOT NULL</td><td>—</td></tr>
+            <tr><td>email</td><td>TEXT NOT NULL</td><td>UNIQUE (org_id, email)</td></tr>
+            <tr><td>password_hash</td><td>TEXT NOT NULL</td><td>bcrypt/argon2</td></tr>
+            <tr><td>display_name</td><td>TEXT NOT NULL</td><td>—</td></tr>
+            <tr><td>role</td><td>enum_user_role NOT NULL</td><td>—</td></tr>
+            <tr><td>is_active</td><td>BOOLEAN NOT NULL DEFAULT TRUE</td><td>—</td></tr>
+            <tr><td>last_login_at</td><td>TIMESTAMPTZ NULL</td><td>—</td></tr>
+            <tr><td>invited_by</td><td>BIGINT FK→app_user NULL</td><td>—</td></tr>
+            <tr><td>invitation_token</td><td>TEXT NULL</td><td>가입 토큰 (해시)</td></tr>
+            <tr><td>invitation_expires_at</td><td>TIMESTAMPTZ NULL</td><td>—</td></tr>
+          </tbody>
+        </table>
+        <div class="entity-meta">
+          <span class="meta-chip index">INDEX (org_id, role, is_active)</span>
+          <span class="meta-chip unique">UNIQUE (invitation_token)</span>
+          <span class="meta-chip check">CHECK password_hash !~ '^plain:'</span>
+        </div>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">partner</div>
+        <div class="entity-desc">파트너(공동대표·동업자) — 정산 분배 대상</div>
+        <table>
+          <thead><tr><th>컬럼</th><th>타입</th><th>비고</th></tr></thead>
+          <tbody>
+            <tr><td>org_id</td><td>BIGINT FK NOT NULL</td><td>—</td></tr>
+            <tr><td>name</td><td>TEXT NOT NULL</td><td>파트너A / 파트너B</td></tr>
+            <tr><td>display_order</td><td>INT NOT NULL DEFAULT 0</td><td>—</td></tr>
+            <tr><td>linked_user_id</td><td>BIGINT FK→app_user NULL</td><td>시스템 계정 매핑 (선택)</td></tr>
+            <tr><td>is_active</td><td>BOOLEAN NOT NULL DEFAULT TRUE</td><td>—</td></tr>
+          </tbody>
+        </table>
+        <div class="entity-meta">
+          <span class="meta-chip unique">UNIQUE (org_id, name) WHERE deleted_at IS NULL</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-B 정책 12종 -->
+    <div class="domain-area b">
+      <div class="domain-header">
+        <span class="domain-badge">3-B</span>
+        <span class="domain-title">정책 테이블 (12종)</span>
+      </div>
+      <p style="font-size:13px; color:var(--gray-700);">모든 정책 테이블은 1-4의 공통 컬럼을 포함. 아래는 <strong>고유 컬럼만</strong> 표시.</p>
+
+      <div class="entity">
+        <div class="entity-name">marketplace_fee_policy</div>
+        <table>
+          <thead><tr><th>컬럼</th><th>타입</th></tr></thead>
+          <tbody>
+            <tr><td>marketplace</td><td>enum_sale_channel NOT NULL</td></tr>
+            <tr><td>category_path</td><td>TEXT NULL ("패션&gt;여성&gt;자켓")</td></tr>
+            <tr><td>fee_type</td><td>enum_marketplace_fee_type NOT NULL</td></tr>
+            <tr><td>rate</td><td>NUMERIC(7,4) NULL</td></tr>
+            <tr><td>fixed_amount</td><td>BIGINT NULL</td></tr>
+            <tr><td>tier_json</td><td>JSONB NULL (TIERED용)</td></tr>
+          </tbody>
+        </table>
+        <div class="entity-meta">
+          <span class="meta-chip unique">UNIQUE (org_id, marketplace, category_path, version)</span>
+          <span class="meta-chip index">INDEX (org_id, marketplace, effective_from DESC)</span>
+          <span class="meta-chip check">CHECK 타입별 컬럼 일관성</span>
+        </div>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">payment_fee_policy</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>method</td><td>enum_payment_method NOT NULL</td></tr>
+          <tr><td>rate</td><td>NUMERIC(7,4) NOT NULL</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">tax_policy</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>tax_type</td><td>enum_tax_type NOT NULL</td></tr>
+          <tr><td>vat_rate</td><td>NUMERIC(7,4) NOT NULL DEFAULT 0.1000</td></tr>
+          <tr><td>applies_to</td><td>TEXT NOT NULL ("전사" / "마켓:COUPANG")</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">fulfillment_fee_policy</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>provider</td><td>TEXT NOT NULL ('쿠팡 로켓그로스')</td></tr>
+          <tr><td>inbound_fee / outbound_fee</td><td>BIGINT NULL</td></tr>
+          <tr><td>storage_fee_per_day</td><td>BIGINT NULL</td></tr>
+          <tr><td>return_handling_fee</td><td>BIGINT NULL</td></tr>
+          <tr><td>extra_json</td><td>JSONB NULL</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">return_risk_policy</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>marketplace / category_path</td><td>NULL 허용</td></tr>
+          <tr><td>return_rate</td><td>NUMERIC(7,4) NOT NULL</td></tr>
+          <tr><td>reason_json</td><td>JSONB NULL (변심/불량/교환 비율)</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">ad_cost_policy</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>marketplace</td><td>enum_sale_channel NOT NULL</td></tr>
+          <tr><td>category_path</td><td>TEXT NULL</td></tr>
+          <tr><td>target_roas</td><td>NUMERIC(7,4) NULL</td></tr>
+          <tr><td>default_ad_ratio</td><td>NUMERIC(7,4) NULL</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">target_margin_policy</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>category_path</td><td>TEXT NULL</td></tr>
+          <tr><td>margin_type</td><td>enum_margin_type NULL</td></tr>
+          <tr><td>target_rate</td><td>NUMERIC(7,4) NOT NULL</td></tr>
+          <tr><td>warning_lower_rate</td><td>NUMERIC(7,4) NULL (경고 임계값)</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">settlement_policy</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>loss_policy</td><td>TEXT NOT NULL DEFAULT 'CARRYOVER'</td></tr>
+          <tr><td>priority_distribution_json</td><td>JSONB NULL ([{partner_id, fixed_amount, condition}])</td></tr>
+          <tr><td>close_day</td><td>INT NOT NULL DEFAULT 5 (매월 N일 마감)</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">partner_share_policy</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>partner_id</td><td>BIGINT FK NOT NULL</td></tr>
+          <tr><td>share_ratio</td><td>NUMERIC(7,4) NOT NULL</td></tr>
+          <tr><td>applies_year_month</td><td>TEXT NULL ('YYYY-MM' override)</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip check">CHECK 동일기간 share_ratio 합 = 1.0000</span>
+          <span class="meta-chip">SEED: 파트너A 0.6, 파트너B 0.4</span>
+        </div>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">expense_category_policy</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>name</td><td>TEXT NOT NULL</td></tr>
+          <tr><td>kind</td><td>enum_expense_category_kind NOT NULL</td></tr>
+          <tr><td>default_tax_deductible</td><td>BOOLEAN NOT NULL DEFAULT TRUE</td></tr>
+          <tr><td>default_settlement_deductible</td><td>BOOLEAN NOT NULL DEFAULT TRUE</td></tr>
+          <tr><td>sort_order</td><td>INT NOT NULL DEFAULT 0</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">evidence_type_policy</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>code</td><td>enum_evidence_type NOT NULL</td></tr>
+          <tr><td>label</td><td>TEXT NOT NULL</td></tr>
+          <tr><td>is_official</td><td>BOOLEAN NOT NULL DEFAULT TRUE</td></tr>
+          <tr><td>description</td><td>TEXT NULL</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">policy_change_history</div>
+        <div class="entity-desc">모든 정책 변경의 통합 로그</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>org_id / policy_table / policy_row_id / version</td><td>—</td></tr>
+          <tr><td>change_action</td><td>enum_audit_action NOT NULL</td></tr>
+          <tr><td>before_json / after_json</td><td>JSONB NULL</td></tr>
+          <tr><td>reason / changed_by / changed_at</td><td>—</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip index">INDEX (org_id, policy_table, changed_at DESC)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-C Policy Snapshot -->
+    <div class="domain-area c">
+      <div class="domain-header">
+        <span class="domain-badge">3-C</span>
+        <span class="domain-title">정책 Snapshot (하이브리드 = FK + JSONB)</span>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">policy_snapshot</div>
+        <div class="entity-desc">하나의 계산(예: 마진 1건)에 대해 사용된 모든 정책 row 묶음</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>org_id</td><td>BIGINT FK NOT NULL</td></tr>
+          <tr><td>owner_kind</td><td>TEXT NOT NULL ('MARGIN_EXPECTED' / 'MARGIN_ACTUAL' / 'SETTLEMENT_MONTHLY')</td></tr>
+          <tr><td>owner_id</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>computed_at</td><td>TIMESTAMPTZ NOT NULL DEFAULT now()</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip index">INDEX (owner_kind, owner_id)</span>
+          <span class="meta-chip index">INDEX (org_id, computed_at DESC)</span>
+        </div>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">policy_snapshot_ref</div>
+        <div class="entity-desc">하나의 snapshot이 참조한 정책 row (FK 리스트)</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>snapshot_id</td><td>BIGINT FK NOT NULL</td></tr>
+          <tr><td>policy_table</td><td>TEXT NOT NULL</td></tr>
+          <tr><td>policy_row_id</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>version</td><td>INT NOT NULL</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">policy_snapshot_value</div>
+        <div class="entity-desc">실제 박제된 값 (JSONB) — 정책 row 사후 변경되어도 안전</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>snapshot_id</td><td>BIGINT FK NOT NULL UNIQUE</td></tr>
+          <tr><td>values_json</td><td>JSONB NOT NULL</td></tr>
+        </tbody></table>
+        <div class="code-block">{
+  "marketplace_fee_policy": { ...전 컬럼... },
+  "tax_policy": { ... },
+  ...
+}</div>
+      </div>
+    </div>
+
+    <!-- 3-D 상품 -->
+    <div class="domain-area d">
+      <div class="domain-header">
+        <span class="domain-badge">3-D</span>
+        <span class="domain-title">상품</span>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">product</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th><th>비고</th></tr></thead><tbody>
+          <tr><td>org_id</td><td>BIGINT FK NOT NULL</td><td>—</td></tr>
+          <tr><td>sku</td><td>TEXT</td><td>UNIQUE (org_id, sku)</td></tr>
+          <tr><td>name_ko / name_en</td><td>TEXT</td><td>en은 해외직구</td></tr>
+          <tr><td>category_path</td><td>TEXT NULL</td><td>—</td></tr>
+          <tr><td>margin_type</td><td>enum_margin_type NOT NULL</td><td>—</td></tr>
+          <tr><td>status</td><td>enum_product_status DEFAULT 'CANDIDATE'</td><td>—</td></tr>
+          <tr><td>supplier_id</td><td>BIGINT FK → external_partner NULL</td><td>—</td></tr>
+          <tr><td>supply_url</td><td>TEXT NULL</td><td>—</td></tr>
+          <tr><td>cost_amount / cost_currency / cost_fx_rate</td><td>BIGINT/TEXT/NUMERIC(12,4)</td><td>해외직구</td></tr>
+          <tr><td>option_dim1_label / option_dim2_label</td><td>TEXT NULL</td><td>O-007 가정</td></tr>
+          <tr><td>option_value_1 / option_value_2</td><td>TEXT NULL</td><td>—</td></tr>
+          <tr><td>memo</td><td>TEXT NULL</td><td>—</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip index">INDEX (org_id, status)</span>
+          <span class="meta-chip index">INDEX (org_id, margin_type)</span>
+          <span class="meta-chip unique">UNIQUE (org_id, sku)</span>
+          <span class="meta-chip">FTS name_ko (Post-MVP)</span>
+        </div>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">product_sourcing_candidate</div>
+        <div class="entity-desc">소싱 후보 (status=CANDIDATE 의 상세)</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>org_id / product_id</td><td>product_id NULL (승격 후 연결)</td></tr>
+          <tr><td>supplier_url</td><td>TEXT NOT NULL</td></tr>
+          <tr><td>supplier_name_snapshot</td><td>TEXT NULL</td></tr>
+          <tr><td>supply_price / moq</td><td>BIGINT / INT</td></tr>
+          <tr><td>category_path</td><td>TEXT NULL</td></tr>
+          <tr><td>candidate_status</td><td>enum_sourcing_status DEFAULT 'CANDIDATE'</td></tr>
+          <tr><td>rejected_reason</td><td>TEXT NULL</td></tr>
+          <tr><td>simulated_margin_json</td><td>JSONB NULL</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">external_partner</div>
+        <div class="entity-desc">공급처·거래처</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>org_id / name</td><td>—</td></tr>
+          <tr><td>kind</td><td>TEXT NOT NULL ('SUPPLIER' / 'CUSTOMER' / 'OTHER')</td></tr>
+          <tr><td>contact_masked</td><td>TEXT NULL</td></tr>
+          <tr><td>vault_entry_id</td><td>BIGINT FK→password_vault_entry NULL</td></tr>
+          <tr><td>memo</td><td>TEXT NULL</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- 3-E 마진 -->
+    <div class="domain-area e">
+      <div class="domain-header">
+        <span class="domain-badge">3-E</span>
+        <span class="domain-title">마진</span>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">product_margin_expected</div>
+        <div class="entity-desc">정책 자동값 + 수동 override 기반의 <strong>예상 마진</strong></div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>org_id / product_id / margin_type / marketplace</td><td>—</td></tr>
+          <tr><td>input_cost / input_sale_price</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>input_extra_json</td><td>JSONB NULL (4종 타입별 추가 입력)</td></tr>
+          <tr><td>computed_marketplace_fee</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>computed_payment_fee</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>computed_ad_cost</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>computed_fulfillment_fee</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>computed_return_risk_cost</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>computed_vat / computed_margin_amount</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>computed_margin_rate</td><td>NUMERIC(7,4) NOT NULL</td></tr>
+          <tr><td>snapshot_id</td><td>BIGINT FK → policy_snapshot NOT NULL</td></tr>
+          <tr><td>override_fields_json</td><td>JSONB NULL (수정 필드 + 사유)</td></tr>
+          <tr><td>valid_from / valid_to</td><td>DATE</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip index">INDEX (org_id, product_id, valid_from DESC)</span>
+          <span class="meta-chip index">INDEX (snapshot_id)</span>
+        </div>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">product_margin_actual</div>
+        <div class="entity-desc">정산 import 후 계산되는 <strong>실 마진</strong></div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>sales_order_id</td><td>BIGINT FK NOT NULL UNIQUE</td></tr>
+          <tr><td>settlement_record_id</td><td>BIGINT FK → marketplace_settlement_record NULL</td></tr>
+          <tr><td>actual_revenue / actual_cost</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>actual_marketplace_fee / actual_payment_fee</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>actual_ad_cost / actual_fulfillment_fee</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>actual_return_cost / actual_vat</td><td>BIGINT NOT NULL</td></tr>
+          <tr><td>actual_margin_amount / actual_margin_rate</td><td>BIGINT / NUMERIC(7,4)</td></tr>
+          <tr><td>matched_expected_id</td><td>BIGINT FK → product_margin_expected NULL</td></tr>
+          <tr><td>delta_margin_amount / delta_margin_rate</td><td>generated 컬럼</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- 3-F 판매 & 정산 import -->
+    <div class="domain-area f">
+      <div class="domain-header">
+        <span class="domain-badge">3-F</span>
+        <span class="domain-title">판매 & 정산 import</span>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">sales_order</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th><th>비고</th></tr></thead><tbody>
+          <tr><td>sale_date</td><td>DATE NOT NULL</td><td>—</td></tr>
+          <tr><td>marketplace</td><td>enum_sale_channel NOT NULL</td><td>—</td></tr>
+          <tr><td>marketplace_order_no</td><td>TEXT NOT NULL</td><td>UNIQUE (org_id, marketplace, order_no)</td></tr>
+          <tr><td>product_id</td><td>BIGINT FK NULL</td><td>매칭 안 된 import 허용</td></tr>
+          <tr><td>product_snapshot_name</td><td>TEXT NULL</td><td>import 시점 상품명</td></tr>
+          <tr><td>quantity</td><td>INT NOT NULL CHECK (&gt; 0)</td><td>—</td></tr>
+          <tr><td>sale_price / ad_cost / shipping_fee</td><td>BIGINT</td><td>—</td></tr>
+          <tr><td>import_source</td><td>TEXT NOT NULL DEFAULT 'MANUAL'</td><td>'MANUAL'/'CSV'/'API'</td></tr>
+          <tr><td>import_batch_id</td><td>BIGINT FK→batch_run NULL</td><td>—</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip index">INDEX (org_id, sale_date)</span>
+          <span class="meta-chip index">INDEX (org_id, marketplace, sale_date)</span>
+          <span class="meta-chip index">INDEX (org_id, product_id, sale_date)</span>
+        </div>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">marketplace_settlement_record</div>
+        <div class="entity-desc">쿠팡·스마트스토어 등에서 import 한 정산 기록</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>settlement_period_start / end</td><td>DATE NOT NULL</td></tr>
+          <tr><td>marketplace_order_no / settled_at</td><td>NULL 허용</td></tr>
+          <tr><td>gross_revenue / marketplace_fee</td><td>BIGINT</td></tr>
+          <tr><td>ad_cost / return_cost / fulfillment_fee</td><td>BIGINT DEFAULT 0</td></tr>
+          <tr><td>other_deductions / net_settlement</td><td>BIGINT</td></tr>
+          <tr><td>raw_json</td><td>JSONB NULL (원본 CSV row)</td></tr>
+          <tr><td>matched_sales_order_id</td><td>BIGINT FK→sales_order NULL</td></tr>
+          <tr><td>import_file_hash</td><td>TEXT NOT NULL (중복 방지)</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip unique">UNIQUE (org, marketplace, order_no, period_start)</span>
+          <span class="meta-chip index">INDEX (import_file_hash)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-G 사업비용 -->
+    <div class="domain-area g">
+      <div class="domain-header">
+        <span class="domain-badge">3-G</span>
+        <span class="domain-title">사업비용 & 증빙</span>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">expenses</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th><th>비고</th></tr></thead><tbody>
+          <tr><td>expense_date</td><td>DATE NOT NULL</td><td>—</td></tr>
+          <tr><td>category_id</td><td>FK→expense_category_policy NOT NULL</td><td>—</td></tr>
+          <tr><td>description</td><td>TEXT NOT NULL</td><td>—</td></tr>
+          <tr><td>supply_amount / vat_amount</td><td>BIGINT NOT NULL</td><td>공급가액 / 부가세</td></tr>
+          <tr><td>total_amount</td><td>BIGINT GENERATED (supply + vat) STORED</td><td>—</td></tr>
+          <tr><td>payment_method</td><td>enum_payment_method NOT NULL</td><td>—</td></tr>
+          <tr><td>payment_card_holder_id</td><td>FK→partner NULL</td><td>개인카드일 때</td></tr>
+          <tr><td>is_personal_card / is_business_use</td><td>BOOLEAN</td><td>사적/사업 구분</td></tr>
+          <tr><td>evidence_type / evidence_status</td><td>enum</td><td>—</td></tr>
+          <tr><td>is_tax_deductible / is_settlement_deductible</td><td>BOOLEAN</td><td>세무공제 / 정산공제</td></tr>
+          <tr><td>attributable_partner_id</td><td>FK→partner NULL</td><td>귀속 파트너</td></tr>
+          <tr><td>linked_settlement_id</td><td>FK→monthly_settlement NULL</td><td>반영된 월정산</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip index">INDEX (org_id, expense_date)</span>
+          <span class="meta-chip index">INDEX (org_id, evidence_status)</span>
+          <span class="meta-chip check">CHECK is_personal_card ⇒ card_holder NOT NULL</span>
+        </div>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">expense_attachment (Post-MVP 슬롯)</div>
+        <div class="entity-desc">파일 첨부 — 컬럼만 미리 둠</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>expense_id</td><td>BIGINT FK NOT NULL</td></tr>
+          <tr><td>storage_path / original_filename / file_hash / mime_type</td><td>—</td></tr>
+          <tr><td>uploaded_by / uploaded_at</td><td>—</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">expense_comment</div>
+        <div class="entity-desc">세무사·내부 코멘트</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>expense_id / author_id / body / posted_at</td><td>—</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- 3-H 정산 -->
+    <div class="domain-area h">
+      <div class="domain-header">
+        <span class="domain-badge">3-H</span>
+        <span class="domain-title">정산 (월별 + 파트너 + 손실 이월)</span>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">monthly_settlement</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>year_month</td><td>CHAR(7) NOT NULL ('YYYY-MM')</td></tr>
+          <tr><td>status</td><td>enum_settlement_status DEFAULT 'DRAFT'</td></tr>
+          <tr><td>total_revenue / total_direct_cost / total_common_expense</td><td>BIGINT</td></tr>
+          <tr><td>net_profit</td><td>BIGINT NOT NULL DEFAULT 0</td></tr>
+          <tr><td>carryover_offset</td><td>BIGINT (이번 달 차감된 손실 이월)</td></tr>
+          <tr><td>distributable_amount</td><td>BIGINT (분배 대상)</td></tr>
+          <tr><td>priority_distribution_total / ratio_distribution_total</td><td>BIGINT</td></tr>
+          <tr><td>reopen_count</td><td>INT DEFAULT 0</td></tr>
+          <tr><td>confirmed_at / confirmed_by / locked_at / locked_by</td><td>—</td></tr>
+          <tr><td>snapshot_id</td><td>BIGINT FK→policy_snapshot NULL</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip unique">UNIQUE (org_id, year_month) WHERE deleted_at IS NULL</span>
+          <span class="meta-chip check">CHECK CONFIRMED/LOCKED ⇒ confirmed_* NOT NULL</span>
+        </div>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">partner_settlement</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>monthly_settlement_id / partner_id</td><td>FK NOT NULL</td></tr>
+          <tr><td>distribution_kind</td><td>enum_distribution_kind (PRIORITY / RATIO)</td></tr>
+          <tr><td>amount / ratio_used</td><td>BIGINT / NUMERIC(7,4)</td></tr>
+          <tr><td>note</td><td>TEXT NULL</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip unique">UNIQUE (monthly_settlement_id, partner_id, distribution_kind)</span>
+        </div>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">loss_carryover_ledger</div>
+        <div class="entity-desc">적자 누적·차감 원장</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>event_at / event_kind</td><td>DATE / enum_carryover_event</td></tr>
+          <tr><td>source_settlement_id</td><td>FK NULL</td></tr>
+          <tr><td>amount</td><td>BIGINT (+) 손실 / (-) 차감</td></tr>
+          <tr><td>balance_after</td><td>BIGINT (잔액)</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">settlement_reopen_audit</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>monthly_settlement_id / reopened_by / reopened_at</td><td>—</td></tr>
+          <tr><td>reason</td><td>TEXT NOT NULL</td></tr>
+          <tr><td>previous_status</td><td>enum_settlement_status NOT NULL</td></tr>
+          <tr><td>snapshot_before_json</td><td>JSONB NULL</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- 3-I 세무사 협업 -->
+    <div class="domain-area i">
+      <div class="domain-header">
+        <span class="domain-badge">3-I</span>
+        <span class="domain-title">세무사 협업 (리포트 묶음)</span>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">tax_report_bundle</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>period_kind</td><td>TEXT ('MONTH' / 'QUARTER' / 'YEAR')</td></tr>
+          <tr><td>period_label</td><td>TEXT NOT NULL ('2026-Q2' 등)</td></tr>
+          <tr><td>sent_to_user_id</td><td>FK→app_user NULL (EXTERNAL_ACCOUNTANT)</td></tr>
+          <tr><td>sent_at / received_at / storage_path</td><td>—</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">tax_report_bundle_item</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>bundle_id / report_kind / file_name / file_hash / generated_at</td><td>—</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- 3-J 횡단 -->
+    <div class="domain-area j">
+      <div class="domain-header">
+        <span class="domain-badge">3-J</span>
+        <span class="domain-title">횡단 — 감사 / 알림 / 비밀번호 vault</span>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">audit_log</div>
+        <div class="entity-desc">모든 도메인 변경 로그</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>domain_table / domain_row_id</td><td>TEXT / BIGINT</td></tr>
+          <tr><td>action</td><td>enum_audit_action NOT NULL</td></tr>
+          <tr><td>actor_user_id</td><td>FK NULL (시스템 액션 NULL)</td></tr>
+          <tr><td>occurred_at / before_json / after_json / reason / request_id</td><td>—</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip index">INDEX (org, domain_table, row_id, occurred_at DESC)</span>
+          <span class="meta-chip">PARTITION 월별 RANGE (Post-MVP)</span>
+        </div>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">notification</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>recipient_user_id</td><td>FK→app_user NOT NULL</td></tr>
+          <tr><td>kind</td><td>enum_notification_kind NOT NULL</td></tr>
+          <tr><td>title / body / channel</td><td>channel DEFAULT 'EMAIL'</td></tr>
+          <tr><td>target_url / sent_at / delivery_status / error_message / meta_json</td><td>—</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">notification_pref</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>user_id</td><td>FK NOT NULL UNIQUE</td></tr>
+          <tr><td>kind_settings_json</td><td>JSONB <code>{"SETTLEMENT_DEADLINE": true, ...}</code></td></tr>
+          <tr><td>channel_settings_json</td><td>JSONB <code>{"EMAIL": true, "KAKAO": false}</code></td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">password_vault_entry</div>
+        <div class="entity-desc"><strong style="color:var(--danger);">⚠️ 비밀번호 평문 절대 저장 금지</strong>. 위치·항목명만.</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>service_name</td><td>TEXT NOT NULL ("쿠팡 Wing")</td></tr>
+          <tr><td>vault_provider</td><td>TEXT NOT NULL ("Bitwarden" / "1Password")</td></tr>
+          <tr><td>vault_item_name</td><td>TEXT NOT NULL</td></tr>
+          <tr><td>account_masked</td><td>TEXT NULL ('cou***@picksome.co.kr')</td></tr>
+          <tr><td>memo</td><td>TEXT NULL</td></tr>
+        </tbody></table>
+        <div class="entity-meta">
+          <span class="meta-chip check">CHECK memo !~* '비밀번호[ :=]*[A-Za-z0-9!@#$]+'</span>
+          <span class="meta-chip check">CHECK memo !~* '(pw|pass|pwd)[ :=]+[A-Za-z0-9!@#$]+'</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-K 외부 연동 -->
+    <div class="domain-area k">
+      <div class="domain-header">
+        <span class="domain-badge">3-K</span>
+        <span class="domain-title">외부 연동 슬롯 (Post-MVP 준비)</span>
+      </div>
+      <p style="font-size:13px; color:var(--gray-700);">DB·코드 구조만 미리 둠. MVP에서는 채우지 않음.</p>
+
+      <div class="entity">
+        <div class="entity-name">integration_account</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>provider</td><td>TEXT ('COUPANG','SMARTSTORE','DOMEGGOOK')</td></tr>
+          <tr><td>account_label</td><td>TEXT NOT NULL</td></tr>
+          <tr><td>credentials_vault_entry_id</td><td>FK→password_vault_entry NOT NULL</td></tr>
+          <tr><td>status / last_synced_at</td><td>—</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">integration_job</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>account_id / job_kind / schedule_cron / is_enabled</td><td>—</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">batch_run / batch_run_log</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>batch_run: job_id / started_at / finished_at / status / affected_rows / summary_json</td><td>—</td></tr>
+          <tr><td>batch_run_log: batch_run_id / level / message / occurred_at</td><td>—</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">external_product_mapping</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>account_id / product_id / external_product_id / last_synced_at</td><td>UNIQUE (account_id, external_product_id)</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">supplier_price_snapshot</div>
+        <table><thead><tr><th>컬럼</th><th>타입</th></tr></thead><tbody>
+          <tr><td>supplier_id / external_product_id / price / currency / observed_at</td><td>—</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="entity">
+        <div class="entity-name">marketplace_order_import / marketplace_settlement_import</div>
+        <div class="entity-desc">원본 CSV 행 저장 (raw_json). 정형화는 별도 변환 단계.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. ERD Diagram -->
+  <section id="s4">
+    <h2><span class="section-num">4</span> 관계 요약 (ER Diagram)</h2>
+
+    <div class="diagram">
+      <div class="mermaid">
+erDiagram
+  organization ||--o{ app_user : has
+  organization ||--o{ partner : has
+  organization ||--o{ product : owns
+  organization ||--o{ monthly_settlement : has
+
+  product }o--|| external_partner : supplier
+  product ||--o{ product_margin_expected : has
+  product ||--o{ product_margin_actual : has
+  product ||--o| product_sourcing_candidate : optional
+
+  sales_order ||--o| product_margin_actual : computed
+  sales_order }o--|| product : refers
+  sales_order ||--o{ marketplace_settlement_record : matched
+
+  monthly_settlement ||--o{ partner_settlement : distributes
+  monthly_settlement ||--o{ expenses : linked
+  monthly_settlement ||--o{ settlement_reopen_audit : audits
+  monthly_settlement ||--|| policy_snapshot : snapshots
+
+  policy_snapshot ||--o{ policy_snapshot_ref : refs
+  policy_snapshot ||--|| policy_snapshot_value : stores
+
+  expenses ||--o{ expense_attachment : files
+  expenses ||--o{ expense_comment : comments
+  expenses }o--|| expense_category_policy : category
+  expenses }o--o| partner : attributable
+
+  app_user ||--o{ notification : receives
+  password_vault_entry ||--o{ external_partner : secrets
+  password_vault_entry ||--o{ integration_account : secrets
+      </div>
+    </div>
+
+    <h3>핵심 관계 (텍스트)</h3>
+    <div class="code-block">organization 1───* app_user
+organization 1───* partner
+organization 1───* (모든 정책 테이블, 모든 도메인 테이블)
+
+product *───1 external_partner (supplier)
+product 1───* product_margin_expected
+product 1───* product_margin_actual
+product 1───1 product_sourcing_candidate (옵션)
+
+sales_order 1───1 product_margin_actual (선택)
+sales_order *───1 product
+sales_order 1───* marketplace_settlement_record (매칭)
+
+monthly_settlement 1───* partner_settlement
+monthly_settlement 1───* expenses (linked_settlement_id)
+monthly_settlement 1───* settlement_reopen_audit
+monthly_settlement 1───1 policy_snapshot
+
+policy_snapshot 1───* policy_snapshot_ref
+policy_snapshot 1───1 policy_snapshot_value
+
+expenses 1───* expense_attachment (Post-MVP)
+expenses 1───* expense_comment
+expenses *───1 expense_category_policy
+expenses *───1 partner (attributable / payment_card_holder)
+
+audit_log : 모든 도메인 mutation 1───* audit_log
+notification *───1 app_user
+password_vault_entry 1───* external_partner / integration_account</div>
+  </section>
+
+  <!-- 5. Index strategy -->
+  <section id="s5">
+    <h2><span class="section-num">5</span> 인덱스 전략 (쿼리 패턴 기반)</h2>
+    <table>
+      <thead><tr><th>Story</th><th>쿼리</th><th>인덱스</th></tr></thead>
+      <tbody>
+        <tr><td><code>US-102</code> 마진계산기</td><td>"지금 effective 인 정책 row"</td><td><code>(org_id, marketplace, effective_from DESC)</code> partial <code>effective_to IS NULL</code></td></tr>
+        <tr><td><code>US-202</code> 정산 import 매칭</td><td>sales_order ↔ settlement_record</td><td>sales_order <code>(org_id, marketplace, order_no)</code> UNIQUE</td></tr>
+        <tr><td><code>US-203</code> 월별 정산 집계</td><td>sales_order WHERE org+sale_date 범위</td><td>sales_order <code>(org_id, sale_date)</code></td></tr>
+        <tr><td><code>US-203</code> expenses 합계</td><td>expenses WHERE 기간 + deductible</td><td>expenses <code>(org_id, expense_date)</code> + partial <code>is_settlement_deductible AND is_business_use</code></td></tr>
+        <tr><td><code>US-302</code> 증빙 카운트</td><td>expenses GROUP BY evidence_status</td><td><code>(org_id, evidence_status)</code></td></tr>
+        <tr><td><code>US-501</code> 리포트</td><td>월/분기 범위 집계</td><td>위 인덱스 + 월별 partial 인덱스 검토</td></tr>
+        <tr><td><code>US-704</code> 감사 로그</td><td>audit_log WHERE org+domain_table+row_id ORDER BY occurred_at DESC</td><td><code>(org_id, domain_table, domain_row_id, occurred_at DESC)</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 6. Integrity -->
+  <section id="s6">
+    <h2><span class="section-num">6</span> 데이터 정합성 규칙</h2>
+
+    <div class="rule-group">
+      <h4>6-1. 정책 시간 범위</h4>
+      <ul class="rule-list">
+        <li>동일 (org_id, 정책키, effective 기간) 중복 금지 → exclusion constraint or 트리거</li>
+        <li>새 버전 등록 시 이전 row의 <code>effective_to = new.effective_from - 1</code></li>
+        <li>정책 row hard delete 금지 (<code>reliability_status = 'DEPRECATED'</code> 로 대체)</li>
+      </ul>
+    </div>
+
+    <div class="rule-group">
+      <h4>6-2. 정산 잠금</h4>
+      <ul class="rule-list">
+        <li><code>status = LOCKED</code> 인 monthly_settlement의 자식 (partner_settlement, loss_carryover_ledger) 변경 금지 → 트리거 또는 BE 가드</li>
+        <li>expenses.linked_settlement_id 가 LOCKED 정산을 가리키면 그 expense도 수정 금지</li>
+      </ul>
+    </div>
+
+    <div class="rule-group">
+      <h4>6-3. 분배 합계</h4>
+      <ul class="rule-list">
+        <li>partner_settlement의 RATIO 분배 합 + PRIORITY 합 = monthly_settlement.distributable_amount (BE 검증)</li>
+        <li>partner_share_policy의 share_ratio 합 = 1.0000 (effective 기간 + applies_year_month 단위)</li>
+      </ul>
+    </div>
+
+    <div class="rule-group">
+      <h4>6-4. 금액 단위</h4>
+      <ul class="rule-list">
+        <li>모든 금액 컬럼 NOT NULL DEFAULT 0</li>
+        <li>supply + vat = total 일관성 (generated column 또는 트리거)</li>
+        <li>quantity, sale_price &gt; 0 CHECK</li>
+      </ul>
+    </div>
+
+    <div class="rule-group">
+      <h4>6-5. 보안</h4>
+      <ul class="rule-list">
+        <li><code>password_vault_entry.memo</code> 평문 비밀번호 패턴 거부 (CHECK)</li>
+        <li><code>app_user.password_hash</code> 평문 패턴 거부 (CHECK)</li>
+        <li>seed/sample 데이터에 실제 계정 사용 금지 (운영 정책)</li>
+      </ul>
+    </div>
+
+    <div class="rule-group">
+      <h4>6-6. Soft delete</h4>
+      <ul class="rule-list">
+        <li>UNIQUE 제약은 partial: <code>WHERE deleted_at IS NULL</code></li>
+        <li>외래키 참조는 logical (BE가 deleted_at 확인)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 7. Migration -->
+  <section id="s7">
+    <h2><span class="section-num">7</span> Migration Plan</h2>
+
+    <h3>7-1. 초기 스키마 (M001)</h3>
+    <ol class="migration-list">
+      <li>extension: <code>pgcrypto</code>, <code>pg_trgm</code> (검색용)</li>
+      <li>enum 타입 전부 생성</li>
+      <li><code>organization</code>, <code>app_user</code>, <code>partner</code></li>
+      <li>12개 정책 테이블 + <code>policy_snapshot*</code></li>
+      <li>상품 / 마진 / 판매 / 정산 import / expenses</li>
+      <li>정산 (<code>monthly_settlement</code> 등)</li>
+      <li>세무사 협업 (<code>tax_report_bundle*</code>)</li>
+      <li>횡단 (<code>audit_log</code>, <code>notification*</code>, <code>password_vault_entry</code>)</li>
+      <li>외부 연동 슬롯</li>
+      <li>공통 트리거 (<code>updated_at</code> 자동, 정책 effective_to 검증)</li>
+    </ol>
+
+    <h3>7-2. 초기 Seed (M002) — 9개 항목</h3>
+    <table>
+      <thead><tr><th>테이블</th><th>Seed 내용</th></tr></thead>
+      <tbody>
+        <tr><td><code>organization</code></td><td>픽썸 1행</td></tr>
+        <tr><td><code>partner</code></td><td>파트너A / 파트너B</td></tr>
+        <tr><td><code>app_user</code></td><td>관리자 1명 (초대 흐름 가입)</td></tr>
+        <tr><td><code>expense_category_policy</code></td><td>표준 카테고리 약 12개</td></tr>
+        <tr><td><code>evidence_type_policy</code></td><td>7종</td></tr>
+        <tr><td><code>tax_policy</code></td><td>일반과세 부가세 10% v1</td></tr>
+        <tr><td><code>partner_share_policy</code></td><td>파트너A 0.6, 파트너B 0.4 v1</td></tr>
+        <tr><td><code>settlement_policy</code></td><td>loss=CARRYOVER, priority=파트너A 1,000,000 v1</td></tr>
+        <tr><td><code>target_margin_policy</code> / <code>marketplace_fee_policy</code></td><td>기본 30% / COUPANG 10.8% 예시 (검증 필요)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>7-3. 향후 Migration 정책</h3>
+    <ul class="rule-list">
+      <li>Alembic 으로 관리. <strong>한 PR = 1 migration</strong> 권장</li>
+      <li>enum 추가는 <code>ALTER TYPE ADD VALUE</code> (PostgreSQL 12+)</li>
+      <li>컬럼 삭제는 deprecated 표시 후 1개 release 이상 유지</li>
+      <li>정책 row hard delete 금지 — DEPRECATED 로 표기</li>
+    </ul>
+
+    <h3>7-4. 백업·복구</h3>
+    <ul class="rule-list">
+      <li>일 1회 <code>pg_dump</code> (논리 백업)</li>
+      <li>WAL 아카이빙 (Post-MVP)</li>
+      <li>정책 / 정산 / audit_log 는 export 후 별도 보관 권장</li>
+    </ul>
+  </section>
+
+  <!-- 8. Open Items -->
+  <section id="s8">
+    <h2><span class="section-num">8</span> Open Items 영향 (DBA 관점)</h2>
+    <div class="open-grid">
+      <div class="open-card">
+        <span class="open-id">O-001</span>
+        <div class="open-title">사업 형태</div>
+        <div class="open-impact">→ <code>organization.business_form</code> enum화 + 검증 추가</div>
+      </div>
+      <div class="open-card">
+        <span class="open-id">O-002</span>
+        <div class="open-title">알림 채널</div>
+        <div class="open-impact">→ <code>notification.channel</code>, <code>channel_settings_json</code> enum 추가</div>
+      </div>
+      <div class="open-card">
+        <span class="open-id">O-003</span>
+        <div class="open-title">세무사 합류</div>
+        <div class="open-impact">→ <code>tax_report_bundle.sent_to_user_id</code>, RBAC enum (미합류 시 일부 NULL)</div>
+      </div>
+      <div class="open-card">
+        <span class="open-id">O-004</span>
+        <div class="open-title">ID 타입</div>
+        <div class="open-impact">→ 모든 PK/FK · BIGSERIAL 유지 가정</div>
+      </div>
+      <div class="open-card">
+        <span class="open-id">O-005</span>
+        <div class="open-title">부가세 자동분리</div>
+        <div class="open-impact">→ <code>expenses.supply/vat</code> · DB 변경 없음 (BE 로직)</div>
+      </div>
+      <div class="open-card">
+        <span class="open-id">O-006</span>
+        <div class="open-title">REOPENED 횟수</div>
+        <div class="open-impact">→ <code>monthly_settlement.reopen_count</code> CHECK 추가 가능</div>
+      </div>
+      <div class="open-card">
+        <span class="open-id">O-007</span>
+        <div class="open-title">옵션 슬롯</div>
+        <div class="open-impact">→ <code>product.option_*</code> 4컬럼 유지 가정</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Handoff -->
+  <section id="s9">
+    <h2><span class="section-num">9</span> Handoff</h2>
+
+    <h3>Summary</h3>
+    <p>12개 정책 + 도메인 + 횡단 = 약 <strong>38개 테이블</strong> 설계. 정책 snapshot 하이브리드, 정산 잠금, audit_log, 사적/사업 비용 구분, 비밀번호 vault, 외부 연동 슬롯 모두 포함.</p>
+
+    <h3>Decisions (DBA 단독)</h3>
+    <ul class="rule-list">
+      <li>BIGSERIAL PK (Inferred, O-004 답변까지)</li>
+      <li>정책 snapshot = <code>policy_snapshot</code> + <code>policy_snapshot_ref</code>(FK 리스트) + <code>policy_snapshot_value</code>(JSONB)</li>
+      <li><code>expenses.total_amount</code> GENERATED 컬럼</li>
+      <li><code>audit_log</code> 월별 파티셔닝은 Post-MVP, MVP는 단일 테이블 + 인덱스</li>
+      <li>enum 21종 정의</li>
+      <li>초기 seed 9개 항목 확정</li>
+    </ul>
+
+    <h3>Open Questions</h3>
+    <ul class="rule-list">
+      <li>사용자 결정 (Open Items 7건, 특히 O-001/O-004/O-007이 DDL에 직결)</li>
+      <li>정책 effective 기간 중복 방지: 트리거 vs CHECK exclusion — BE 합의 필요</li>
+      <li><code>audit_log</code> 자동 기록: DB 트리거 vs BE 서비스 — BE 결정 사항</li>
+    </ul>
+
+    <h3>Risks</h3>
+    <div class="handoff-grid">
+      <div class="handoff-card">
+        <h4>⚠️ 정책 12종 × 효력기간</h4>
+        <p style="font-size:13px;">새 row 등록 시 휴먼 에러 가능<br>→ UI(US-401)에서 가드, BE 트랜잭션 보강</p>
+      </div>
+      <div class="handoff-card">
+        <h4>⚠️ snapshot JSONB 비대</h4>
+        <p style="font-size:13px;">TOAST 의존<br>→ 정기 보관 정책 필요</p>
+      </div>
+      <div class="handoff-card">
+        <h4>⚠️ audit_log 폭증</h4>
+        <p style="font-size:13px;">partition 부재<br>→ 2년 보관 후 archive 권장</p>
+      </div>
+    </div>
+
+    <h3>Required Inputs for Next Role</h3>
+    <div class="handoff-grid">
+      <div class="handoff-card">
+        <h4>🐍 Backend</h4>
+        <ul>
+          <li>서비스 함수 시그니처 (<code>get_active_policy_snapshot</code>, <code>calculate_*_margin</code>, <code>calculate_monthly_settlement</code>, <code>generate_tax_report</code>)</li>
+          <li>REST endpoint 매핑 (PRD User Story → endpoint)</li>
+          <li>트랜잭션 경계 / audit_log 기록 위치 정의</li>
+        </ul>
+      </div>
+      <div class="handoff-card">
+        <h4>🐳 DevOps</h4>
+        <ul>
+          <li>Postgres 16</li>
+          <li>확장 (<code>pgcrypto</code>, <code>pg_trgm</code>)</li>
+          <li>백업 cron, env 변수</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Handoff Target</h3>
+    <p style="background:var(--success-light); padding:14px 18px; border-radius:10px; border-left:4px solid var(--success);">
+      <strong>Backend (병렬)</strong> → Designer → Frontend → DevOps → User/세무 검증
+    </p>
+  </section>
+
+  <!-- 10. Action Checklist -->
+  <section id="s10">
+    <h2><span class="section-num">10</span> Action Checklist</h2>
+    <ul class="checklist">
+      <li class="done">21개 enum 정의</li>
+      <li class="done">약 38개 테이블 정의 (조직/사용자/정책12/snapshot/상품/마진/판매/정산/비용/세무사/감사/알림/vault/외부연동)</li>
+      <li class="done">모든 테이블 audit 컬럼 + soft delete</li>
+      <li class="done">금액 BIGINT / 비율 NUMERIC(7,4) 강제</li>
+      <li class="done">PK/FK/UNIQUE/INDEX/CHECK 명시</li>
+      <li class="done">정책 snapshot 하이브리드 패턴</li>
+      <li class="done">정산 LOCKED 잠금 규칙</li>
+      <li class="done">보안 CHECK 제약 (vault/평문 거부)</li>
+      <li class="done">Migration 초기 + seed 9개</li>
+      <li class="done">Handoff 작성</li>
+      <li class="pending">(사용자) O-001/O-004/O-007 답변 시 본 ERD 보강</li>
+      <li class="pending">(Next) Backend: <code>docs/22_api_spec.md</code></li>
+    </ul>
+  </section>
+
+  <div class="footer">
+    PICKSOME OPS TOOL · ERD · 2026-06-17 · DBA · 입력: PRD · Schema Design · Decision Log
+  </div>
+</div>
+</body>
+</html>

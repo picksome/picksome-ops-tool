@@ -1,0 +1,53 @@
+table: fulfillment_fee_policy
+purpose: 풀필먼트(로켓그로스 등) 제공자별 입고/출고/보관/반품 처리 수수료 정책.
+section: 3-B 정책
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: provider
+    type: TEXT
+    nullable: false
+    note: e.g. "ROCKET_GROWTH", "CJ_LOGIS"
+  - name: inbound_fee
+    type: BIGINT
+    nullable: true
+    note: 입고 수수료 — 원 단위 정수 (KRW)
+  - name: outbound_fee
+    type: BIGINT
+    nullable: true
+    note: 출고 수수료 — 원 단위 정수 (KRW)
+  - name: storage_fee_per_day
+    type: BIGINT
+    nullable: true
+    note: 일 단위 보관비 — 원 단위 정수 (KRW)
+  - name: return_handling_fee
+    type: BIGINT
+    nullable: true
+    note: 반품 처리비 — 원 단위 정수 (KRW)
+  - name: extra_json
+    type: JSONB
+    nullable: true
+    note: 부수 fee (e.g. 부피측정 보정 등)
+
+audit_columns: true
+policy_columns: true
+
+constraints: []
+
+indexes:
+  - name: uq_ffp_org_provider_ver
+    type: UNIQUE
+    columns: [org_id, provider, version]
+    where: deleted_at IS NULL
+
+foreign_keys: []
+
+referenced_by: []
+
+notes: |
+  - 마진 계산 (`calculate_expected_margin`) 의 입력. ROCKET_GROWTH 가 MVP 기본 provider.

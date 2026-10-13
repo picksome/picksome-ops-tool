@@ -1,0 +1,58 @@
+table: batch_run
+purpose: 배치 실행 단위 헤더. import/sync/계산 등 모든 배치 job 의 실행 1회 = 1 row.
+section: 3-L 외부 연동 (Post-MVP)
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: job_id
+    type: UUID
+    nullable: true
+    note: 정기 job 이면 integration_job.id. 일회성 manual import 면 NULL
+  - name: started_at
+    type: TIMESTAMPTZ
+    nullable: false
+    default: now()
+  - name: finished_at
+    type: TIMESTAMPTZ
+    nullable: true
+  - name: status
+    type: TEXT
+    nullable: false
+    default: "'RUNNING'"
+    note: e.g. RUNNING, SUCCESS, FAILED, PARTIAL
+  - name: affected_rows
+    type: INT
+    nullable: false
+    default: 0
+  - name: summary_json
+    type: JSONB
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys:
+  - column: job_id
+    references: integration_job.id
+    nullable: true
+    note: M001 section 14 에서 ALTER TABLE 로 추가 (integration_job 이 나중에 생성됨)
+
+referenced_by:
+  - sales_order.import_batch_id
+  - marketplace_settlement_record.import_batch_id
+  - batch_run_log.batch_run_id
+  - marketplace_order_import.batch_run_id
+  - marketplace_settlement_import.batch_run_id
+
+notes: |
+  - Post-MVP integration 슬롯. MVP 에서는 manual import 시에도 batch_run row 1개 생성 (멱등성용).
+  - import 멱등성: 동일 import_file_hash 가 settlement record 에 있으면 중복 차단.

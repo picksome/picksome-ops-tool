@@ -1,0 +1,169 @@
+table: expenses
+purpose: 사업 비용 1건. 정산/세무/수익배분의 입력. 증빙 유형/상태 필수 (D-284).
+section: 3-H 사업비용/증빙
+decisions: [D-284]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: expense_date
+    type: DATE
+    nullable: false
+  - name: category_id
+    type: UUID
+    nullable: false
+  - name: description
+    type: TEXT
+    nullable: false
+  - name: gross_amount
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW). = supply_amount + vat_amount
+  - name: supply_amount
+    type: BIGINT
+    nullable: false
+    note: 공급가액 — 원 단위 정수 (KRW)
+  - name: vat_amount
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW)
+  - name: vat_inclusion_type
+    type: enum_vat_inclusion_type
+    nullable: false
+    default: INCLUDED
+    enum_values: [INCLUDED, EXCLUDED, EXEMPT]
+    decision: D-284
+  - name: tax_type
+    type: enum_tax_type
+    nullable: false
+    default: GENERAL
+    enum_values: [GENERAL, SIMPLE, EXEMPT]
+  - name: tax_policy_id
+    type: UUID
+    nullable: true
+    decision: D-284
+    note: 기록 시점 tax_policy 박제
+  - name: is_manual_tax_override
+    type: BOOLEAN
+    nullable: false
+    default: FALSE
+    note: 정책 자동 적용 후 사용자가 수동 변경했는지
+  - name: payment_method
+    type: enum_payment_method
+    nullable: false
+    enum_values: [BUSINESS_CARD, PERSONAL_CARD, BANK_TRANSFER, CASH, OTHER]
+  - name: payment_card_holder_id
+    type: UUID
+    nullable: true
+    note: PERSONAL_CARD 사용 시 카드 소유자 partner
+  - name: is_personal_card
+    type: BOOLEAN
+    nullable: false
+    default: FALSE
+  - name: is_business_use
+    type: BOOLEAN
+    nullable: false
+    default: TRUE
+    note: FALSE = 비업무용. 정산 차감 대상에서 제외
+  - name: evidence_type
+    type: enum_evidence_type
+    nullable: false
+    default: OTHER
+    enum_values: [TAX_INVOICE, CASH_RECEIPT, CARD_SLIP, BANK_TRANSFER, SIMPLE_RECEIPT, SELF_DECLARED, OTHER]
+  - name: evidence_status
+    type: enum_evidence_status
+    nullable: false
+    default: NONE
+    enum_values: [NONE, NEEDS_CHECK, PRESENT, SUBMITTED_TO_ACCOUNTANT]
+  - name: is_tax_deductible
+    type: BOOLEAN
+    nullable: false
+    default: TRUE
+  - name: is_settlement_deductible
+    type: BOOLEAN
+    nullable: false
+    default: TRUE
+  - name: attributable_partner_id
+    type: UUID
+    nullable: true
+    note: 특정 partner 에게 귀속되는 비용 (선택)
+  - name: supplier_id
+    type: UUID
+    nullable: true
+  - name: memo
+    type: TEXT
+    nullable: true
+  - name: linked_settlement_id
+    type: UUID
+    nullable: true
+    note: 어느 월정산에 포함되었는지
+
+audit_columns: true
+policy_columns: false
+
+constraints:
+  - name: ck_expenses_personal_card
+    type: CHECK
+    expression: is_personal_card = FALSE OR payment_card_holder_id IS NOT NULL
+  - name: ck_expenses_total
+    type: CHECK
+    expression: gross_amount = supply_amount + vat_amount
+  - name: ck_expenses_exempt_vat
+    type: CHECK
+    expression: vat_inclusion_type <> 'EXEMPT' OR vat_amount = 0
+
+indexes:
+  - name: ix_expenses_org_date
+    type: INDEX
+    columns: [org_id, expense_date]
+  - name: ix_expenses_org_cat_date
+    type: INDEX
+    columns: [org_id, category_id, expense_date]
+  - name: ix_expenses_org_evidence
+    type: INDEX
+    columns: [org_id, evidence_status]
+  - name: ix_expenses_org_linked
+    type: INDEX
+    columns: [org_id, linked_settlement_id]
+  - name: ix_expenses_org_settle_deduct
+    type: INDEX
+    columns: [org_id, expense_date]
+    where: is_settlement_deductible = TRUE AND is_business_use = TRUE
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: category_id
+    references: expense_category_policy.id
+  - column: tax_policy_id
+    references: tax_policy.id
+    nullable: true
+  - column: payment_card_holder_id
+    references: partner.id
+    nullable: true
+  - column: attributable_partner_id
+    references: partner.id
+    nullable: true
+  - column: supplier_id
+    references: external_partner.id
+    nullable: true
+  - column: linked_settlement_id
+    references: monthly_settlement.id
+    nullable: true
+
+referenced_by:
+  - expense_attachment.expense_id
+  - expense_comment.expense_id
+
+notes: |
+  - D-284: vat_inclusion_type + tax_policy_id 박제로 세 정책 변경 후에도 과거 재현.
+  - CLAUDE.md: MVP 에서 파일 첨부 없어도 evidence_type + status 는 반드시 저장.
+  - is_settlement_deductible = TRUE 인 expenses 합계가 monthly_settlement.total_common_expense.
+  - PERSONAL_CARD 사용 시 카드 소유자 (partner) 필수.

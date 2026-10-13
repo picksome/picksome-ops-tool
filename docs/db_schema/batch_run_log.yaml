@@ -1,0 +1,41 @@
+table: batch_run_log
+purpose: batch_run 1건의 로그 라인. INFO/WARN/ERROR 시퀀스.
+section: 3-L 외부 연동 (Post-MVP)
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: batch_run_id
+    type: UUID
+    nullable: false
+  - name: level
+    type: TEXT
+    nullable: false
+    note: INFO / WARN / ERROR
+  - name: message
+    type: TEXT
+    nullable: false
+  - name: occurred_at
+    type: TIMESTAMPTZ
+    nullable: false
+    default: now()
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys:
+  - column: batch_run_id
+    references: batch_run.id
+
+referenced_by: []
+
+notes: |
+  - 민감정보 로그 출력 금지 (CLAUDE.md Security).

@@ -1,0 +1,44 @@
+table: external_product_mapping
+purpose: 내부 product 와 외부 시스템의 상품 ID 매핑. integration_account 마다 별도.
+section: 3-L 외부 연동 (Post-MVP)
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: account_id
+    type: UUID
+    nullable: false
+  - name: product_id
+    type: UUID
+    nullable: false
+  - name: external_product_id
+    type: TEXT
+    nullable: false
+  - name: last_synced_at
+    type: TIMESTAMPTZ
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints:
+  - name: uq_epm_account_external
+    type: UNIQUE
+    columns: [account_id, external_product_id]
+
+indexes: []
+
+foreign_keys:
+  - column: account_id
+    references: integration_account.id
+  - column: product_id
+    references: product.id
+
+referenced_by: []
+
+notes: |
+  - Post-MVP 슬롯. external_product_id 동일하더라도 account 가 다르면 별 row.

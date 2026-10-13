@@ -1,0 +1,110 @@
+table: product
+purpose: 상품 마스터. 소싱 → 등록 → 활성/중단까지의 라이프사이클을 가짐. 옵션은 별도 3테이블 정규화.
+section: 3-E 상품/옵션
+decisions: [D-286]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: business_key
+    type: TEXT
+    nullable: false
+    note: 사용자 노출용 ID (UUID 미노출). org 단위 unique.
+  - name: sku
+    type: TEXT
+    nullable: true
+  - name: name_ko
+    type: TEXT
+    nullable: false
+  - name: name_en
+    type: TEXT
+    nullable: true
+  - name: category_path
+    type: TEXT
+    nullable: true
+  - name: margin_type
+    type: enum_margin_type
+    nullable: false
+    enum_values: [PURCHASE_AGENCY, ROCKET_GROWTH, OVERSEAS_DIRECT, GENERAL_RESELL]
+  - name: status
+    type: enum_product_status
+    nullable: false
+    default: CANDIDATE
+    enum_values: [CANDIDATE, APPROVED, ACTIVE, PAUSED, DISCONTINUED]
+  - name: supplier_id
+    type: UUID
+    nullable: true
+  - name: supply_url
+    type: TEXT
+    nullable: true
+  - name: cost_amount
+    type: BIGINT
+    nullable: true
+    note: 원 단위 정수 (KRW). 옵션 있으면 product_variant.cost_amount 가 우선
+  - name: cost_currency
+    type: TEXT
+    nullable: true
+  - name: cost_fx_rate
+    type: NUMERIC(12,4)
+    nullable: true
+    note: 외화 환율 (해외직구 등). 수동 입력값 — 실시간 환율 API 연동은 Post-MVP (M005)
+  - name: cost_amount_foreign
+    type: BIGINT
+    nullable: true
+    note: >-
+      현지통화 기준 공급가 (M005). cost_currency != 'KRW' 이고 cost_fx_rate 가 있으면
+      서버가 cost_amount_foreign × cost_fx_rate 를 cost_amount(KRW) 로 자동 환산.
+      재고 lot 별 원가관리(FIFO)는 범위 밖 — "최신 원가 1개" 모델 유지.
+  - name: has_variants
+    type: BOOLEAN
+    nullable: false
+    default: FALSE
+    decision: D-286
+    note: TRUE 면 product_variant 가 권위 — 단일 상품 cost/sale_price 무시
+  - name: memo
+    type: TEXT
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: uq_product_org_business_key
+    type: UNIQUE
+    columns: [org_id, business_key]
+    where: deleted_at IS NULL
+  - name: ix_product_org_status
+    type: INDEX
+    columns: [org_id, status]
+  - name: ix_product_org_margin_type
+    type: INDEX
+    columns: [org_id, margin_type]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: supplier_id
+    references: external_partner.id
+    nullable: true
+
+referenced_by:
+  - product_option_group.product_id
+  - product_variant.product_id
+  - product_sourcing_candidate.product_id
+  - product_margin_expected.product_id
+  - product_margin_actual.product_id
+  - sales_order.product_id
+  - external_product_mapping.product_id
+
+notes: |
+  - D-286: 옵션 정규화 (option_group / option_value / product_variant). has_variants 로 분기.
+  - business_key = 사용자 노출 ID (D-283 UUID 미노출 원칙).
+  - status 라이프사이클: CANDIDATE → APPROVED → ACTIVE → PAUSED/DISCONTINUED.

@@ -1,0 +1,41 @@
+table: return_risk_policy
+purpose: 마켓/카테고리별 예상 반품률 정책. 마진 계산 시 반품비 예측에 사용.
+section: 3-B 정책
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: marketplace
+    type: TEXT
+    nullable: true
+    note: sale_channel.code 참조 (M007, D-287) — 앱 레벨 검증, DB ENUM 아님
+    note: NULL = 전 마켓 공통
+  - name: category_path
+    type: TEXT
+    nullable: true
+  - name: return_rate
+    type: NUMERIC(7,4)
+    nullable: false
+    note: 4자리 소수 비율 (0.1234 = 12.34%)
+  - name: reason_json
+    type: JSONB
+    nullable: true
+    note: 반품 사유별 비율 분해 (선택)
+
+audit_columns: true
+policy_columns: true
+
+constraints: []
+
+indexes: []
+
+foreign_keys: []
+
+referenced_by: []
+
+notes: |
+  - return_rate 는 예상치. 실 반품비는 marketplace_settlement_record.return_cost 사용.

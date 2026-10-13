@@ -1,0 +1,120 @@
+table: product_margin_expected
+purpose: 상품별 기대 마진 계산 결과의 박제. 정책 snapshot 과 함께 등록 시점의 마진을 보존.
+section: 3-F 마진
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: product_id
+    type: UUID
+    nullable: false
+  - name: product_variant_id
+    type: UUID
+    nullable: true
+  - name: margin_type
+    type: enum_margin_type
+    nullable: false
+    enum_values: [PURCHASE_AGENCY, ROCKET_GROWTH, OVERSEAS_DIRECT, GENERAL_RESELL]
+  - name: marketplace
+    type: TEXT
+    nullable: false
+    note: sale_channel.code 참조 (M007, D-287) — 앱 레벨 검증, DB ENUM 아님
+  - name: input_cost
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: input_sale_price
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: input_extra_json
+    type: JSONB
+    nullable: true
+    note: 추가 입력값 (옵션별 가격 등)
+  - name: computed_marketplace_fee
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: computed_payment_fee
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: computed_ad_cost
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: computed_fulfillment_fee
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: computed_return_risk_cost
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: computed_vat
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: computed_margin_amount
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: computed_margin_rate
+    type: NUMERIC(7,4)
+    nullable: false
+    note: 4자리 소수 비율 (0.1234 = 12.34%)
+  - name: snapshot_id
+    type: UUID
+    nullable: false
+    note: 박제된 정책 snapshot
+  - name: override_fields_json
+    type: JSONB
+    nullable: true
+    note: 정책 값을 수동으로 override 한 항목 기록
+  - name: valid_from
+    type: DATE
+    nullable: false
+  - name: valid_to
+    type: DATE
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: ix_pme_org_product_from
+    type: INDEX
+    columns: [org_id, product_id, valid_from DESC]
+  - name: ix_pme_snapshot
+    type: INDEX
+    columns: [snapshot_id]
+  - name: ix_pme_variant
+    type: INDEX
+    columns: [product_variant_id]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: product_id
+    references: product.id
+  - column: product_variant_id
+    references: product_variant.id
+    nullable: true
+  - column: snapshot_id
+    references: policy_snapshot.id
+
+referenced_by:
+  - product_margin_actual.matched_expected_id
+
+notes: |
+  - `calculate_expected_margin` 함수의 결과 박제. 정책 변경 후에도 과거 시점 마진 재현.
+  - override_fields_json: 정책 자동 적용 후 사용자가 수동 수정한 컬럼 기록.

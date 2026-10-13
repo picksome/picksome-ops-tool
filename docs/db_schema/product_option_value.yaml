@@ -1,0 +1,49 @@
+table: product_option_value
+purpose: 옵션 그룹 내 값 (예 색상 그룹의 "빨강", "파랑"). option_group 1:N value.
+section: 3-E 상품/옵션
+decisions: [D-286]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: option_group_id
+    type: UUID
+    nullable: false
+  - name: value
+    type: TEXT
+    nullable: false
+  - name: sort_order
+    type: INT
+    nullable: false
+    default: 0
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: uq_pov_group_value
+    type: UNIQUE
+    columns: [option_group_id, value]
+    where: deleted_at IS NULL
+  - name: ix_pov_group_sort
+    type: INDEX
+    columns: [option_group_id, sort_order]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: option_group_id
+    references: product_option_group.id
+
+referenced_by: []
+
+notes: |
+  - D-286: 값 자체는 product_variant.option_values_json 에서 텍스트로 사용. ID 참조는 없음.

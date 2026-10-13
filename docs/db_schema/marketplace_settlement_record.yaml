@@ -1,0 +1,115 @@
+table: marketplace_settlement_record
+purpose: 마켓플레이스의 정산 명세서 1행. 쿠팡 정산 import 결과. sales_order 와 매칭.
+section: 3-G 판매/정산
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: marketplace
+    type: TEXT
+    nullable: false
+    note: sale_channel.code 참조 (M007, D-287) — 앱 레벨 검증, DB ENUM 아님
+  - name: settlement_period_start
+    type: DATE
+    nullable: false
+  - name: settlement_period_end
+    type: DATE
+    nullable: false
+  - name: marketplace_order_no
+    type: TEXT
+    nullable: true
+  - name: settled_at
+    type: DATE
+    nullable: true
+  - name: gross_revenue
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: marketplace_fee
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW)
+  - name: ad_cost
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW)
+  - name: return_cost
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW)
+  - name: fulfillment_fee
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW)
+  - name: other_deductions
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW)
+  - name: net_settlement
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: raw_json
+    type: JSONB
+    nullable: true
+    note: 원본 정산서 raw 박제
+  - name: matched_sales_order_id
+    type: UUID
+    nullable: true
+  - name: import_batch_id
+    type: UUID
+    nullable: true
+  - name: import_file_hash
+    type: TEXT
+    nullable: false
+    note: import 멱등성 키 — 동일 파일 재 import 차단
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: uq_msr_unique
+    type: UNIQUE
+    columns: [org_id, marketplace, "COALESCE(marketplace_order_no, '')", settlement_period_start]
+    where: deleted_at IS NULL
+  - name: ix_msr_org_settled
+    type: INDEX
+    columns: [org_id, settled_at]
+  - name: ix_msr_matched_order
+    type: INDEX
+    columns: [matched_sales_order_id]
+  - name: ix_msr_file_hash
+    type: INDEX
+    columns: [import_file_hash]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: matched_sales_order_id
+    references: sales_order.id
+    nullable: true
+  - column: import_batch_id
+    references: batch_run.id
+    nullable: true
+
+referenced_by:
+  - product_margin_actual.settlement_record_id
+
+notes: |
+  - 쿠팡 정산서 import 시점 박제. matched_sales_order_id 는 매칭 알고리즘이 채움 (사후).
+  - 멱등성: (org_id, marketplace, marketplace_order_no, settlement_period_start) UNIQUE.
+  - import_file_hash 로 동일 파일 재 import 검출.

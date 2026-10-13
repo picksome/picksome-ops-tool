@@ -1,0 +1,35 @@
+# 개발용 override — docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+name: picksome-ops-tool
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+      args:
+        INSTALL_DEV: "true"
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      APP_ENV: dev
+      LOG_LEVEL: DEBUG
+
+  frontend:
+    build:
+      context: ./frontend
+      target: deps
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+    ports:
+      - "3000:3000"
+
+  proxy:
+    ports:
+      - "80:80"

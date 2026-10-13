@@ -1,0 +1,41 @@
+table: notification_pref
+purpose: 사용자별 알림 설정 (kind 별 on/off, 채널 선택).
+section: 3-K 알림
+decisions: [D-281]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: user_id
+    type: UUID
+    nullable: false
+    note: UNIQUE — 사용자 1명당 pref 1개
+  - name: kind_settings_json
+    type: JSONB
+    nullable: false
+    note: kind 별 on/off (e.g. {"MARGIN_DROP": true, "VAT_DEADLINE": true})
+  - name: channel_settings_json
+    type: JSONB
+    nullable: false
+    note: kind 별 채널 선택 (e.g. {"SETTLEMENT_DEADLINE": ["EMAIL","IN_APP"]})
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys:
+  - column: user_id
+    references: app_user.id
+    unique: true
+
+referenced_by: []
+
+notes: |
+  - D-281: 사용자가 kind 별로 채널 조합 선택. MVP 활성 채널만 표시.
+  - 기본값은 백엔드 service 가 user 생성 시 SYSTEM default 로 초기화.

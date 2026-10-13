@@ -1,0 +1,66 @@
+table: policy_change_history
+purpose: 정책 row 변경 이력. 어떤 정책이 누구에 의해 언제 어떻게 바뀌었는지 추적.
+section: 3-B 정책 부속
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: policy_table
+    type: TEXT
+    nullable: false
+    note: 변경된 정책 테이블명 (e.g. "marketplace_fee_policy")
+  - name: policy_row_id
+    type: UUID
+    nullable: false
+  - name: version
+    type: INT
+    nullable: false
+  - name: change_action
+    type: enum_audit_action
+    nullable: false
+    enum_values: [CREATE, UPDATE, DELETE, RESTORE, STATUS_CHANGE, POLICY_OVERRIDE, LOGIN, LOGOUT, PERMISSION_CHANGE, EXPORT, IMPORT]
+  - name: before_json
+    type: JSONB
+    nullable: true
+  - name: after_json
+    type: JSONB
+    nullable: true
+  - name: reason
+    type: TEXT
+    nullable: true
+  - name: changed_by
+    type: UUID
+    nullable: false
+  - name: changed_at
+    type: TIMESTAMPTZ
+    nullable: false
+    default: now()
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: ix_pch_org_table_time
+    type: INDEX
+    columns: [org_id, policy_table, changed_at DESC]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: changed_by
+    references: app_user.id
+
+referenced_by: []
+
+notes: |
+  - audit_log 와 별개. audit_log = 도메인 row 변경, policy_change_history = 정책 row 변경.
+  - 정책 변경은 INSERT 신규 version 권장. UPDATE 시 before/after 반드시 기록.

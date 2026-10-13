@@ -1,0 +1,218 @@
+@import "tailwindcss";
+
+/*
+ * 디자인.md 기준 색상 체계 (2026-07 리프레시):
+ *   Primary = #111827 (검정 계열 — 사이드바 배경, 주요 텍스트)
+ *   Brand/Accent = #4F46E5 (인디고 — 버튼 CTA, 링크, 포커스 링, 사이드바 active, 차트 메인 라인)
+ *   Info(상태) = #2563EB 로 Brand와 분리 — 상태 배지는 여전히 상태 전달에만 사용, 장식 금지.
+ *   Brand는 "이 제품의 정체성 색"으로 반복 노출(사이드바/CTA/차트/핵심 KPI)해 존재감을 준다.
+ */
+@theme {
+  /* Base */
+  --color-background:      #F8FAFC;
+  --color-surface:         #FFFFFF;
+  --color-border:          #E5E7EB;
+  --color-input:           #E5E7EB;
+  --color-muted:           #F1F5F9;
+  --color-muted-foreground:#64748B;
+
+  /* Text */
+  --color-foreground:      #0F172A;
+  --color-foreground-muted:#64748B;
+
+  /* Brand */
+  --color-primary:         #111827;
+  --color-primary-foreground: #FFFFFF;
+  --color-accent:          #4F46E5;
+  --color-accent-hover:    #4338CA;
+  --color-accent-foreground: #FFFFFF;
+  --color-accent-bg:       #EEF2FF;
+  --color-accent-border:   #C7D2FE;
+
+  /* Card */
+  --color-card:            #FFFFFF;
+  --color-card-foreground: #0F172A;
+
+  /* Secondary */
+  --color-secondary:       #F1F5F9;
+  --color-secondary-foreground: #0F172A;
+
+  /* Status */
+  --color-success:         #059669;
+  --color-success-bg:      #ECFDF5;
+  --color-success-border:  #A7F3D0;
+
+  --color-danger:          #DC2626;
+  --color-danger-bg:       #FEF2F2;
+  --color-danger-border:   #FECACA;
+
+  --color-warning:         #D97706;
+  --color-warning-bg:      #FFFBEB;
+  --color-warning-border:  #FDE68A;
+
+  --color-info:            #2563EB;
+  --color-info-bg:         #EFF6FF;
+  --color-info-border:     #BFDBFE;
+
+  /* Policy auto-value */
+  --color-surface-muted:   #F1F5F9;
+  --color-surface-warn:    #FFFBEB;
+  --color-surface-locked:  #E5E7EB;
+
+  /* 손익 전용 — 색만으로 구분하지 않는다(접근성). 항상 부호/아이콘/라벨을 함께 쓴다. */
+  --color-profit:          #059669;   /* 수익·정상 */
+  --color-loss:            #DC2626;   /* 손실·오류 전용 */
+  --color-neutral-value:   #475569;   /* 증감 0 */
+
+  /* Sidebar (dark rail — 콘텐츠는 라이트 유지, 사이드바만 대비) */
+  --color-sidebar:            #111827;
+  --color-sidebar-border:     #1F2937;
+  --color-sidebar-foreground: #E5E7EB;
+  --color-sidebar-muted:      #6B7280;
+  --color-sidebar-hover:      #1F2937;
+  --color-sidebar-active:     var(--color-accent);
+  --color-sidebar-active-foreground: #FFFFFF;
+
+  /* Misc */
+  --color-ring:            #4F46E5;
+  --color-destructive:     #DC2626;
+  --color-destructive-foreground: #FFFFFF;
+
+  /*
+   * ⚠️ Tailwind v4 는 `--color-*` 네임스페이스에서만 색상 유틸리티를 생성한다.
+   * shadcn 컴포넌트가 쓰는 `bg-popover` / `text-popover-foreground` 는
+   * `--popover` 만 있으면 **유틸리티 자체가 만들어지지 않아 클래스가 조용히 무시된다.**
+   * 그 결과 dialog / sheet / popover / dropdown / select / command / tooltip 이
+   * 전부 배경 없이(투명하게) 렌더됐다. `--color-` 접두 버전을 반드시 함께 둔다.
+   */
+  --color-popover:            #FFFFFF;
+  --color-popover-foreground: #0F172A;
+
+  /* 레이아웃 치수 — 사이드바 240px / 상단바 64px (8px 그리드) */
+  --layout-sidebar-width:           240px;
+  --layout-sidebar-collapsed-width:  64px;
+  --layout-header-height:            64px;
+  --layout-drawer-width:            680px;  /* 상품 slide-over: 640~720 범위 */
+
+  /* 8px 간격 시스템 */
+  --space-1: 4px;   --space-2: 8px;   --space-3: 12px;  --space-4: 16px;
+  --space-5: 24px;  --space-6: 32px;  --space-7: 40px;  --space-8: 48px;
+
+  /* shadcn radix-nova 컴포넌트가 참조하는 토큰 — 우리 색상 체계와 매핑 */
+  --background:          var(--color-background);
+  --foreground:          var(--color-foreground);
+  --card:                var(--color-card);
+  --card-foreground:     var(--color-card-foreground);
+  --popover:             var(--color-popover);
+  --popover-foreground:  var(--color-popover-foreground);
+  --primary:             var(--color-primary);
+  --primary-foreground:  var(--color-primary-foreground);
+  --secondary:           var(--color-secondary);
+  --secondary-foreground:var(--color-secondary-foreground);
+  --muted:               var(--color-muted);
+  --muted-foreground:    var(--color-muted-foreground);
+  --accent:              var(--color-accent);
+  --accent-foreground:   var(--color-accent-foreground);
+  --destructive:         var(--color-destructive);
+  --border:              var(--color-border);
+  --input:               var(--color-input);
+  --ring:                var(--color-ring);
+
+  --radius: 0.375rem;
+
+  --font-sans:
+    "Pretendard Variable", "Pretendard",
+    -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+[data-theme="dark"] {
+  --color-background:      #0F172A;
+  --color-surface:         #1E293B;
+  --color-border:          #334155;
+  --color-input:           #334155;
+  --color-muted:           #1E293B;
+  --color-muted-foreground:#94A3B8;
+  --color-foreground:      #F8FAFC;
+  --color-foreground-muted:#94A3B8;
+  --color-primary:         #F8FAFC;
+  --color-primary-foreground: #0F172A;
+  --color-card:            #1E293B;
+  --color-card-foreground: #F8FAFC;
+}
+
+* {
+  border-color: var(--color-border);
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 금액·비율 전용 숫자 폰트 */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 운영 콘솔 공통 프리미티브
+ * 카드 남발 대신 "테이블 + 필터" 를 중심에 두는 스타일 (Shopify Admin / Stripe 계열).
+ */
+
+/* 흰 콘텐츠 판 — 회색 배경 위에 얹는 기본 단위 */
+.ops-panel {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+/* 표 헤더: 스크롤해도 붙어 있어야 밀도 높은 테이블이 읽힌다 */
+.ops-sticky-head th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--color-muted);
+}
+
+/* 좌우 스크롤이 필요한 넓은 테이블 컨테이너 */
+.ops-scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+/* 포커스 링 — 키보드 탐색 가시성 (접근성) */
+.ops-focusable:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 숫자 컬럼 우측 정렬 + 고정폭 숫자 */
+.ops-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 스크린리더 전용 */
+.sr-only-focusable:not(:focus):not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* 애니메이션 최소화 선호 존중 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

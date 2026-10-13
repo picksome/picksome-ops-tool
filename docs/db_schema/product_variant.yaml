@@ -1,0 +1,78 @@
+table: product_variant
+purpose: 옵션 조합별 SKU. (색상x사이즈 등) variant_key 로 unique 한 조합 1개.
+section: 3-E 상품/옵션
+decisions: [D-286]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: product_id
+    type: UUID
+    nullable: false
+  - name: variant_key
+    type: TEXT
+    nullable: false
+    note: 옵션 조합 식별자 (e.g. "RED|XL"). product 내 unique
+  - name: option_values_json
+    type: JSONB
+    nullable: false
+    note: 옵션 그룹/값의 정규화된 조합 (e.g. {"색상":"빨강","사이즈":"XL"})
+  - name: sku_external
+    type: TEXT
+    nullable: true
+    note: 마켓별 외부 SKU
+  - name: cost_amount
+    type: BIGINT
+    nullable: true
+    note: 원 단위 정수 (KRW). product.cost_amount 보다 우선
+  - name: sale_price
+    type: BIGINT
+    nullable: true
+    note: 원 단위 정수 (KRW)
+  - name: extra_price
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 옵션 추가 가격 (기본가 대비 차이) — 원 단위 정수 (KRW)
+  - name: stock_quantity
+    type: INT
+    nullable: true
+  - name: is_active
+    type: BOOLEAN
+    nullable: false
+    default: TRUE
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: uq_variant_product_key
+    type: UNIQUE
+    columns: [product_id, variant_key]
+    where: deleted_at IS NULL
+  - name: ix_variant_org_product_active
+    type: INDEX
+    columns: [org_id, product_id, is_active]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: product_id
+    references: product.id
+
+referenced_by:
+  - product_margin_expected.product_variant_id
+  - product_margin_actual.product_variant_id
+  - sales_order.product_variant_id
+
+notes: |
+  - D-286: 옵션 정규화 핵심. product.has_variants=TRUE 인 경우 권위.
+  - option_values_json 은 검색/표시용 비정규화. 정합성은 앱 단 검증.

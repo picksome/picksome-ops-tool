@@ -1,0 +1,162 @@
+table: monthly_settlement
+purpose: 월별 정산 헤더. 매출/직접비/공통비/순이익/분배 총액 박제. DRAFT→CONFIRMED→LOCKED 라이프사이클.
+section: 3-G 판매/정산
+decisions: [D-285]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: business_key
+    type: TEXT
+    nullable: false
+    note: 사용자 노출 ID (D-283)
+  - name: year_month
+    type: CHAR(7)
+    nullable: false
+    note: YYYY-MM
+  - name: status
+    type: enum_settlement_status
+    nullable: false
+    default: DRAFT
+    enum_values: [DRAFT, CONFIRMED, LOCKED, REOPENED]
+  - name: total_revenue
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW)
+  - name: total_direct_cost
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW). 상품 직접비 합계
+  - name: total_common_expense
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW). 사업 공통비 합계
+  - name: net_profit
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW). 순이익 = revenue - direct - common
+  - name: carryover_offset
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW). 이월 손실 차감액
+  - name: distributable_amount
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW). 실 분배 대상 금액
+  - name: priority_distribution_total
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW)
+  - name: ratio_distribution_total
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW)
+  - name: reopen_count
+    type: INT
+    nullable: false
+    default: 0
+    decision: D-285
+    note: 누적 REOPEN 횟수. org.settlement_reopen_limit 와 비교 (override 시 reopen_limit_override 우선)
+  - name: reopen_limit_override
+    type: INT
+    nullable: true
+    decision: D-285
+    note: org 한도 무시하고 이 row 만 별도 한도. NULL = org 기본값 사용
+  - name: last_reopened_at
+    type: TIMESTAMPTZ
+    nullable: true
+  - name: last_reopened_by
+    type: UUID
+    nullable: true
+  - name: last_reopen_reason
+    type: TEXT
+    nullable: true
+  - name: confirmed_at
+    type: TIMESTAMPTZ
+    nullable: true
+  - name: confirmed_by
+    type: UUID
+    nullable: true
+  - name: locked_at
+    type: TIMESTAMPTZ
+    nullable: true
+  - name: locked_by
+    type: UUID
+    nullable: true
+  - name: snapshot_id
+    type: UUID
+    nullable: true
+    note: 정산 시점 정책 박제
+  - name: memo
+    type: TEXT
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints:
+  - name: ck_ms_year_month
+    type: CHECK
+    expression: year_month ~ '^[0-9]{4}-[0-9]{2}$'
+  - name: ck_ms_reopen_override
+    type: CHECK
+    expression: reopen_limit_override IS NULL OR reopen_limit_override >= 0
+  - name: ck_ms_confirmed_meta
+    type: CHECK
+    expression: |
+      status NOT IN ('CONFIRMED','LOCKED')
+       OR (confirmed_at IS NOT NULL AND confirmed_by IS NOT NULL)
+
+indexes:
+  - name: uq_ms_org_ym
+    type: UNIQUE
+    columns: [org_id, year_month]
+    where: deleted_at IS NULL
+  - name: uq_ms_org_business_key
+    type: UNIQUE
+    columns: [org_id, business_key]
+    where: deleted_at IS NULL
+  - name: ix_ms_org_status_ym
+    type: INDEX
+    columns: [org_id, status, year_month DESC]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: last_reopened_by
+    references: app_user.id
+    nullable: true
+  - column: confirmed_by
+    references: app_user.id
+    nullable: true
+  - column: locked_by
+    references: app_user.id
+    nullable: true
+  - column: snapshot_id
+    references: policy_snapshot.id
+    nullable: true
+
+referenced_by:
+  - partner_settlement.monthly_settlement_id
+  - loss_carryover_ledger.source_settlement_id
+  - settlement_reopen_audit.monthly_settlement_id
+  - expenses.linked_settlement_id
+
+notes: |
+  - D-285: reopen_count + 한도 (org 또는 row override). MVP 기본 3회.
+  - LOCKED 상태는 변경 불가 (REOPEN 으로 풀어야 수정). REOPEN 시 reopen_count++ + audit row 생성.
+  - 순이익 = total_revenue - total_direct_cost - total_common_expense (CLAUDE.md Settlement Model).

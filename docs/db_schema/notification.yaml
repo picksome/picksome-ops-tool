@@ -1,0 +1,84 @@
+table: notification
+purpose: 사용자에게 발송된 알림 1건. IN_APP 은 헤더 벨에 표시, EMAIL 은 SMTP 발송 후 상태 기록.
+section: 3-K 알림
+decisions: [D-281]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: recipient_user_id
+    type: UUID
+    nullable: false
+  - name: kind
+    type: enum_notification_kind
+    nullable: false
+    enum_values: [SETTLEMENT_DEADLINE, VAT_DEADLINE, MARGIN_DROP, STOCKOUT_RISK, POLICY_REVIEW, ACCOUNTANT_COMMENT, SYSTEM]
+  - name: title
+    type: TEXT
+    nullable: false
+  - name: body
+    type: TEXT
+    nullable: true
+  - name: channel_code
+    type: enum_notification_channel_code
+    nullable: false
+    default: IN_APP
+    enum_values: [EMAIL, IN_APP, KAKAO, SLACK, TELEGRAM, WEBHOOK]
+    decision: D-281
+  - name: target_url
+    type: TEXT
+    nullable: true
+    note: 클릭 시 이동할 내부 URL
+  - name: sent_at
+    type: TIMESTAMPTZ
+    nullable: true
+  - name: delivery_status
+    type: TEXT
+    nullable: false
+    default: "'PENDING'"
+    note: PENDING / SENT / FAILED
+  - name: read_at
+    type: TIMESTAMPTZ
+    nullable: true
+  - name: error_message
+    type: TEXT
+    nullable: true
+  - name: meta_json
+    type: JSONB
+    nullable: true
+    note: 알림 source row reference 등
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: ix_notification_recipient_time
+    type: INDEX
+    columns: [recipient_user_id, sent_at DESC]
+  - name: ix_notification_org_kind_time
+    type: INDEX
+    columns: [org_id, kind, sent_at DESC]
+  - name: ix_notification_unread
+    type: INDEX
+    columns: [recipient_user_id, read_at]
+    where: read_at IS NULL
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: recipient_user_id
+    references: app_user.id
+
+referenced_by: []
+
+notes: |
+  - D-281: MVP 채널 = EMAIL + IN_APP. 다른 채널은 row 생성 가능하지만 어댑터가 noop.
+  - ix_notification_unread partial index 로 헤더 벨 미읽음 카운트 빠르게.

@@ -1,0 +1,47 @@
+table: integration_job
+purpose: 정기 배치 job 정의. cron 스케줄 + enabled 플래그.
+section: 3-L 외부 연동 (Post-MVP)
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: account_id
+    type: UUID
+    nullable: false
+  - name: job_kind
+    type: TEXT
+    nullable: false
+    note: e.g. "ORDER_SYNC", "SETTLEMENT_SYNC", "PRICE_CRAWL"
+  - name: schedule_cron
+    type: TEXT
+    nullable: true
+  - name: is_enabled
+    type: BOOLEAN
+    nullable: false
+    default: FALSE
+  - name: trigger_kind
+    type: TEXT
+    nullable: false
+    default: "'SCHEDULE'"
+    note: "SCHEDULE(API pull, cron) / WEBHOOK(봇 push, 예약 실행 없음) — M009, docs/27 3-3 투트랙 구분"
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys:
+  - column: account_id
+    references: integration_account.id
+
+referenced_by:
+  - batch_run.job_id
+
+notes: |
+  - Post-MVP 슬롯. 야간 배치 (CLAUDE.md External Integration Roadmap) 의 정의.

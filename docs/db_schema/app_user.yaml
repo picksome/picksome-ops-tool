@@ -1,0 +1,94 @@
+table: app_user
+purpose: 조직 내부 사용자 계정. 인증/RBAC 의 주체이며 모든 actor_user_id / created_by 의 참조 대상.
+section: 3-A 조직/사용자
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: email
+    type: TEXT
+    nullable: false
+  - name: password_hash
+    type: TEXT
+    nullable: false
+    note: bcrypt/argon2 해시. 평문 저장 금지 (CHECK 제약으로 'plain:' prefix 차단)
+  - name: display_name
+    type: TEXT
+    nullable: false
+  - name: role
+    type: enum_user_role
+    nullable: false
+    enum_values: [ADMIN, OPERATOR, SOURCING, ACCOUNTING, READONLY, EXTERNAL_ACCOUNTANT]
+  - name: is_active
+    type: BOOLEAN
+    nullable: false
+    default: TRUE
+  - name: last_login_at
+    type: TIMESTAMPTZ
+    nullable: true
+  - name: invited_by
+    type: UUID
+    nullable: true
+  - name: invitation_token
+    type: TEXT
+    nullable: true
+  - name: invitation_expires_at
+    type: TIMESTAMPTZ
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints:
+  - name: ck_app_user_password_not_plain
+    type: CHECK
+    expression: password_hash !~ '^plain:'
+
+indexes:
+  - name: uq_app_user_org_email
+    type: UNIQUE
+    columns: [org_id, email]
+    where: deleted_at IS NULL
+  - name: uq_app_user_invitation_token
+    type: UNIQUE
+    columns: [invitation_token]
+    where: invitation_token IS NOT NULL
+  - name: ix_app_user_org_role_active
+    type: INDEX
+    columns: [org_id, role, is_active]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: invited_by
+    references: app_user.id
+    nullable: true
+
+referenced_by:
+  - partner.linked_user_id
+  - policy_change_history.changed_by
+  - monthly_settlement.last_reopened_by
+  - monthly_settlement.confirmed_by
+  - monthly_settlement.locked_by
+  - settlement_reopen_audit.reopened_by
+  - expense_attachment.uploaded_by
+  - expense_comment.author_id
+  - tax_report_bundle.sent_to_user_id
+  - audit_log.actor_user_id
+  - notification.recipient_user_id
+  - notification_pref.user_id
+  - POLICY_COLS.approved_by (모든 정책 테이블)
+  - AUDIT_COLS.created_by/updated_by/deleted_by (전 테이블 — 99 섹션 일괄 FK)
+
+notes: |
+  - 평문 비밀번호 저장 금지 (CLAUDE.md Security). password_hash 컬럼은 hash 만.
+  - invited_by 자기참조 — 사용자 초대 흐름.
+  - RBAC 6 roles. EXTERNAL_ACCOUNTANT 라우트는 D-282 에 따라 Post-MVP.
+  - email 은 org 단위 unique (멀티테넌트 동일 이메일 허용).

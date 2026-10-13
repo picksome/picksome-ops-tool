@@ -1,0 +1,50 @@
+table: marketplace_order_import
+purpose: 마켓 주문 import 의 raw payload 박제. sales_order 로 정규화 전 원본 보존.
+section: 3-L 외부 연동 (Post-MVP)
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: batch_run_id
+    type: UUID
+    nullable: true
+  - name: raw_json
+    type: JSONB
+    nullable: false
+    note: 외부 API/Excel 의 원본 row
+  - name: imported_at
+    type: TIMESTAMPTZ
+    nullable: false
+    default: now()
+  - name: source_type
+    type: TEXT
+    nullable: false
+    default: "'MANUAL'"
+    note: "API_AUTO / BOT_AUTO / MANUAL (M009, D-291) — 나중에 배분 오차 추적 시 출처 구분 필요"
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: batch_run_id
+    references: batch_run.id
+    nullable: true
+
+referenced_by: []
+
+notes: |
+  - Post-MVP 슬롯. MVP 에서는 미사용 가능.
+  - 정규화 (sales_order INSERT) 와 별개 — 원본 raw 영구 보존.

@@ -1,0 +1,38 @@
+table: policy_snapshot_value
+purpose: snapshot 의 실제 정책 값 JSON 본문. ref 와 1:1 관계 (snapshot_id UNIQUE).
+section: 3-B 정책 부속
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: snapshot_id
+    type: UUID
+    nullable: false
+    note: UNIQUE — snapshot 1건당 value row 1개
+  - name: values_json
+    type: JSONB
+    nullable: false
+    note: 정책 row 들의 actual 값을 박제한 JSON dump
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys:
+  - column: snapshot_id
+    references: policy_snapshot.id
+    on_delete: CASCADE
+    unique: true
+
+referenced_by: []
+
+notes: |
+  - ref 는 참조 메타데이터, value 는 박제된 실값. 정책 테이블이 변해도 과거 계산 재현 가능.
+  - snapshot_id UNIQUE 제약으로 1:1 enforced.

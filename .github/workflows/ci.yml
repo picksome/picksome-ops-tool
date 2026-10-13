@@ -1,0 +1,203 @@
+# CI 게이트 (Phase 17).
+#
+# 왜 필요한가
+# ---------
+# 이 저장소에서 프론트가 존재하지 않는 API 경로를 부르는 결함이 네 번 났다
+# (D2/D6/D9/D11). 넷 다 타입체크·린트·빌드를 전부 통과했고, 화면은 조용히
+# 빈 목록이나 0을 그렸다. 금액 화면에서 그건 "데이터가 없다" 가 아니라
+# "0원이다" 로 읽힌다.
+#
+# 그래서 **계약 테스트와 실제 DB 를 쓰는 테스트가 CI 에서 반드시 돌아야 한다.**
+# 로컬에서만 도는 검증은 언젠가 안 돌게 된다.
+#
+# 실패를 재시도로 감추지 않는다
+# -------------------------
+# Playwright `retries: 0`. 재시도로 통과시키면 "가끔 깨지는 테스트" 가 되고,
+# 그 순간부터 아무도 빨간 불을 믿지 않는다. 불안정하면 원인을 고친다.
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  # 같은 브랜치에 연속으로 밀면 앞선 실행은 취소한다.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+
+jobs:
+  backend:
+    name: 백엔드 (lint · migration · test)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: picksome
+          POSTGRES_PASSWORD: change-me-local
+          POSTGRES_DB: picksome_ops
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      DATABASE_URL: postgresql+psycopg://picksome:change-me-local@localhost:5432/picksome_ops
+      # 테스트는 별도 DB 를 만들어 쓴다(conftest). 만들 권한이 필요하다.
+      TEST_ADMIN_DATABASE_URL: postgresql+psycopg://picksome:change-me-local@localhost:5432/postgres
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: 의존성 설치
+        working-directory: backend
+        # 의존성은 pyproject.toml 에 있다. requirements.txt 는 없다.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: 테스트 역할 준비
+        run: |
+          PGPASSWORD=change-me-local psql -h localhost -U picksome -d postgres -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'picksome_test') THEN
+              CREATE ROLE picksome_test LOGIN PASSWORD 'picksome_test' CREATEDB;
+            END IF;
+          END $$;
+          SQL
+
+      - name: 린트
+        working-directory: backend
+        # scripts 도 포함한다. e2e_db.py 는 E2E 가 DB 상태를 확인하는 통로라
+        # 여기가 조용히 썩으면 테스트 결과를 못 믿게 된다.
+        run: ruff check app scripts
+
+      - name: 마이그레이션 전체 왕복
+        working-directory: backend
+        # 빈 DB 에서 head → base → head.
+        # downgrade 를 안 쓴 마이그레이션은 롤백이 필요한 순간에야 깨진 걸 알게 된다.
+        #
+        # **왕복 성공은 무손실이 아니다.** downgrade 는 테이블을 DROP 하므로 그
+        # 안의 값은 사라진다. 그 구분은 test_migration_data_safety.py 가 고정한다.
+        run: |
+          alembic upgrade head
+          alembic downgrade base
+          alembic upgrade head
+
+      - name: 테스트
+        working-directory: backend
+        run: pytest -ra -q
+
+  frontend:
+    name: 프론트엔드 (lint · typecheck · test · build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 의존성 설치
+        working-directory: frontend
+        run: npm ci
+
+      - name: 린트
+        working-directory: frontend
+        run: npm run lint
+
+      - name: 타입체크
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: 단위·계약 테스트
+        working-directory: frontend
+        # API 클라이언트 계약 테스트가 여기 들어 있다. 경로·필드명이 어긋나면
+        # 여기서 깨져야 한다 — 빌드는 문자열을 검사하지 못한다.
+        run: npx vitest run
+
+      - name: 빌드
+        working-directory: frontend
+        run: npm run build
+
+  e2e:
+    name: E2E (실제 FastAPI + PostgreSQL)
+    runs-on: ubuntu-latest
+    # 앞의 두 job 이 깨졌으면 E2E 를 도는 의미가 없다 — 어차피 같은 원인이다.
+    needs: [backend, frontend]
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: picksome
+          POSTGRES_PASSWORD: change-me-local
+          POSTGRES_DB: picksome_ops
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      DATABASE_URL: postgresql+psycopg://picksome:change-me-local@localhost:5432/picksome_ops
+      # mock 이 아니다 — 진짜 백엔드가 진짜 DB 를 읽는다.
+      CI: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 의존성 설치
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "./backend"
+          npm --prefix frontend ci
+
+      - name: 브라우저 설치
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E
+        working-directory: frontend
+        # global-setup 이 E2E DB 생성 + migration + seed 를 한다.
+        run: npx playwright test
+
+      - name: 실패 아티팩트
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7

@@ -1,0 +1,59 @@
+table: settlement_reopen_audit
+purpose: 정산 REOPEN 이벤트의 감사 기록. 누가, 언제, 어떤 이유로 LOCKED 를 풀었는지 영구 보존.
+section: 3-G 판매/정산
+decisions: [D-285]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: monthly_settlement_id
+    type: UUID
+    nullable: false
+  - name: reopened_by
+    type: UUID
+    nullable: false
+  - name: reopened_at
+    type: TIMESTAMPTZ
+    nullable: false
+    default: now()
+  - name: reason
+    type: TEXT
+    nullable: false
+    note: REOPEN 사유 필수
+  - name: previous_status
+    type: enum_settlement_status
+    nullable: false
+    enum_values: [DRAFT, CONFIRMED, LOCKED, REOPENED]
+  - name: reopen_count_after
+    type: INT
+    nullable: false
+    note: 이 REOPEN 직후 monthly_settlement.reopen_count 값
+  - name: snapshot_before_json
+    type: JSONB
+    nullable: true
+    note: REOPEN 직전 monthly_settlement 박제
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: ix_sra_ms_time
+    type: INDEX
+    columns: [monthly_settlement_id, reopened_at DESC]
+
+foreign_keys:
+  - column: monthly_settlement_id
+    references: monthly_settlement.id
+  - column: reopened_by
+    references: app_user.id
+
+referenced_by: []
+
+notes: |
+  - D-285: MVP 기본 3회 REOPEN 한도. 한도 초과 시 거부.
+  - reason 필수. snapshot_before_json 으로 REOPEN 전 상태 복구 가능.

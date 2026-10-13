@@ -1,0 +1,45 @@
+table: evidence_type_policy
+purpose: 증빙 유형 마스터. expenses.evidence_type 의 라벨/공식증빙 여부 정의.
+section: 3-B 정책
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: code
+    type: enum_evidence_type
+    nullable: false
+    enum_values: [TAX_INVOICE, CASH_RECEIPT, CARD_SLIP, BANK_TRANSFER, SIMPLE_RECEIPT, SELF_DECLARED, OTHER]
+  - name: label
+    type: TEXT
+    nullable: false
+    note: 사용자 노출용 한국어 라벨 (e.g. "세금계산서", "현금영수증")
+  - name: is_official
+    type: BOOLEAN
+    nullable: false
+    default: TRUE
+    note: 공식 증빙 여부 — 세무 신고 사용 가능한지 표시
+  - name: description
+    type: TEXT
+    nullable: true
+
+audit_columns: true
+policy_columns: true
+
+constraints: []
+
+indexes:
+  - name: uq_etp_org_code_ver
+    type: UNIQUE
+    columns: [org_id, code, version]
+    where: deleted_at IS NULL
+
+foreign_keys: []
+
+referenced_by: []
+
+notes: |
+  - SYSTEM 템플릿 7종 적재. SELF_DECLARED / SIMPLE_RECEIPT 는 is_official=FALSE.

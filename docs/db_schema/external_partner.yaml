@@ -1,0 +1,55 @@
+table: external_partner
+purpose: 외부 거래처 (공급사, 도매처, 물류사 등). product.supplier_id / expenses.supplier_id 가 참조.
+section: 3-D 외부 파트너
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: name
+    type: TEXT
+    nullable: false
+  - name: kind
+    type: TEXT
+    nullable: false
+    note: 거래처 유형 (e.g. "SUPPLIER", "LOGISTICS", "ACCOUNTANT_OFFICE")
+  - name: contact_masked
+    type: TEXT
+    nullable: true
+    note: 연락처 마스킹
+  - name: vault_entry_id
+    type: UUID
+    nullable: true
+    note: 로그인 계정이 있는 경우 vault 참조
+  - name: memo
+    type: TEXT
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: vault_entry_id
+    references: password_vault_entry.id
+    nullable: true
+
+referenced_by:
+  - product.supplier_id
+  - product_sourcing_candidate (간접 — supplier_url 텍스트)
+  - expenses.supplier_id
+  - supplier_price_snapshot.supplier_id
+
+notes: |
+  - 도매꾹/1688 같은 외부 공급사 메타. 실제 API 연동은 integration_account.

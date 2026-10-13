@@ -1,0 +1,133 @@
+table: sales_order
+purpose: 판매 주문 1건. 마켓별 주문번호로 unique. product_margin_actual 의 입력.
+section: 3-G 판매/정산
+decisions: [D-284]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: business_key
+    type: TEXT
+    nullable: false
+    note: 사용자 노출용 ID (D-283 UUID 미노출)
+  - name: sale_date
+    type: DATE
+    nullable: false
+  - name: marketplace
+    type: TEXT
+    nullable: false
+    note: sale_channel.code 참조 (M007, D-287) — 앱 레벨 검증, DB ENUM 아님
+  - name: marketplace_order_no
+    type: TEXT
+    nullable: false
+  - name: product_id
+    type: UUID
+    nullable: true
+    note: 미매칭 가능 (외부 import 시점에 상품 미등록일 수 있음)
+  - name: product_variant_id
+    type: UUID
+    nullable: true
+  - name: product_snapshot_name
+    type: TEXT
+    nullable: true
+    note: 판매 시점 상품명 박제 (이후 상품명 변경 보존)
+  - name: quantity
+    type: INT
+    nullable: false
+  - name: sale_price
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW)
+  - name: ad_cost
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW)
+  - name: shipping_fee
+    type: BIGINT
+    nullable: false
+    default: 0
+    note: 원 단위 정수 (KRW)
+  - name: vat_inclusion_type
+    type: enum_vat_inclusion_type
+    nullable: false
+    default: INCLUDED
+    enum_values: [INCLUDED, EXCLUDED, EXEMPT]
+    decision: D-284
+  - name: tax_policy_id
+    type: UUID
+    nullable: true
+    decision: D-284
+    note: 판매 시점 적용 tax_policy 박제
+  - name: memo
+    type: TEXT
+    nullable: true
+  - name: import_source
+    type: TEXT
+    nullable: false
+    default: "'MANUAL'"
+    note: MANUAL / EXCEL_IMPORT / API_IMPORT
+  - name: import_batch_id
+    type: UUID
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints:
+  - name: ck_sales_order_qty
+    type: CHECK
+    expression: quantity > 0
+  - name: ck_sales_order_price
+    type: CHECK
+    expression: sale_price >= 0
+
+indexes:
+  - name: uq_sales_order_org_business_key
+    type: UNIQUE
+    columns: [org_id, business_key]
+    where: deleted_at IS NULL
+  - name: uq_sales_order_mkt_orderno
+    type: UNIQUE
+    columns: [org_id, marketplace, marketplace_order_no]
+    where: deleted_at IS NULL
+  - name: ix_so_org_sale_date
+    type: INDEX
+    columns: [org_id, sale_date]
+  - name: ix_so_org_mkt_date
+    type: INDEX
+    columns: [org_id, marketplace, sale_date]
+  - name: ix_so_org_product_date
+    type: INDEX
+    columns: [org_id, product_id, sale_date]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: product_id
+    references: product.id
+    nullable: true
+  - column: product_variant_id
+    references: product_variant.id
+    nullable: true
+  - column: tax_policy_id
+    references: tax_policy.id
+    nullable: true
+  - column: import_batch_id
+    references: batch_run.id
+    nullable: true
+
+referenced_by:
+  - marketplace_settlement_record.matched_sales_order_id
+  - product_margin_actual.sales_order_id
+
+notes: |
+  - D-284: vat_inclusion_type + tax_policy_id 박제 — 정책 변경 후에도 과거 세 계산 재현.
+  - 멱등성: (org_id, marketplace, marketplace_order_no) UNIQUE — import 중복 차단.
+  - product_id NULL 허용 — 외부 import 시 상품 매칭은 후처리.

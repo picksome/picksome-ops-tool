@@ -1,0 +1,70 @@
+table: sale_channel
+purpose: 판매채널(마켓) 동적 카탈로그. org 가 신규 마켓(예 오늘의집)을 배포 없이 직접 추가 가능.
+section: 3-B 정책 (D-287)
+decisions: [D-287]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: true
+    note: NULL = SYSTEM 카탈로그(모든 org 공용 기본 9종). 값 있으면 그 org 전용 커스텀 채널.
+  - name: code
+    type: TEXT
+    nullable: false
+    note: >-
+      'COUPANG' 'OHOUSE' 등. marketplace_fee_policy 등 6개 테이블의 marketplace(TEXT)
+      값이 이 code 를 참조(앱 레벨 검증 — DB FK 아님, services/sale_channel.py::resolve_sale_channel).
+  - name: display_name
+    type: TEXT
+    nullable: false
+    note: 사용자 노출용 ("오늘의집")
+  - name: is_system_default
+    type: BOOLEAN
+    nullable: false
+    default: false
+    note: TRUE 면 SYSTEM 시드(초기 9종) — 삭제 금지, is_active 로만 비활성화
+  - name: integration_kind
+    type: TEXT
+    nullable: false
+    default: "'NONE'"
+    note: NONE / API / BOT — docs/27 3-3 투트랙 연동에서 이 채널이 자동입력 가능한지 표시
+  - name: is_active
+    type: BOOLEAN
+    nullable: false
+    default: true
+
+audit_columns: true
+policy_columns: false
+
+constraints:
+  - name: ck_sale_channel_integration_kind
+    type: CHECK
+    expression: "integration_kind IN ('NONE', 'API', 'BOT')"
+
+indexes:
+  - name: uq_sale_channel_org_code
+    type: UNIQUE
+    columns: ["COALESCE(org_id, '00000000-0000-0000-0000-000000000000')", code]
+    where: deleted_at IS NULL
+  - name: ix_sale_channel_org_active
+    type: INDEX
+    columns: [org_id, is_active]
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+    nullable: true
+
+referenced_by:
+  - integration_account.sale_channel_id (M009, 3-3 예정)
+
+notes: |
+  - M007 에서 enum_sale_channel 을 대체. 기존 enum 값 9종(COUPANG/SMARTSTORE/ELEVENST/
+    GMARKET/AUCTION/SELF_MALL/OTHER/TEMU/TOSS)을 org_id=NULL, is_system_default=TRUE 로 시드.
+  - marketplace_fee_policy 등 6개 테이블의 marketplace 컬럼은 이제 TEXT — 계산 로직은
+    문자열 비교라 ENUM 이었을 때와 동작 동일, 다만 신규 코드 추가 시 마이그레이션 불필요.

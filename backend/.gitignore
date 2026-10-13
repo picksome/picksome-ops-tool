@@ -1,0 +1,4 @@
+
+# Playwright 가 backend cwd 에서 실행될 때 남기는 산출물
+test-results/
+playwright-report/

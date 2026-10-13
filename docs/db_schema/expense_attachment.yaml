@@ -1,0 +1,51 @@
+table: expense_attachment
+purpose: 사업비용 증빙 파일 첨부. MVP 에서 storage_path 만 기록 가능 (실제 업로드는 확장).
+section: 3-H 사업비용/증빙
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: expense_id
+    type: UUID
+    nullable: false
+  - name: storage_path
+    type: TEXT
+    nullable: true
+  - name: original_filename
+    type: TEXT
+    nullable: true
+  - name: file_hash
+    type: TEXT
+    nullable: true
+  - name: mime_type
+    type: TEXT
+    nullable: true
+  - name: uploaded_by
+    type: UUID
+    nullable: true
+  - name: uploaded_at
+    type: TIMESTAMPTZ
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys:
+  - column: expense_id
+    references: expenses.id
+  - column: uploaded_by
+    references: app_user.id
+    nullable: true
+
+referenced_by: []
+
+notes: |
+  - CLAUDE.md: 파일 첨부는 MVP 이후 확장. MVP 는 storage_path 미사용 가능.

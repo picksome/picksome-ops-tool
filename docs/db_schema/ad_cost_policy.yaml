@@ -1,0 +1,40 @@
+table: ad_cost_policy
+purpose: 마켓/카테고리별 광고비 정책 (목표 ROAS 와 기본 광고비 비율).
+section: 3-B 정책
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: marketplace
+    type: TEXT
+    nullable: false
+    note: sale_channel.code 참조 (M007, D-287) — 앱 레벨 검증, DB ENUM 아님
+  - name: category_path
+    type: TEXT
+    nullable: true
+  - name: target_roas
+    type: NUMERIC(7,4)
+    nullable: true
+    note: 목표 ROAS (Return on Ad Spend). 4자리 소수 (e.g. 3.0000 = 300%)
+  - name: default_ad_ratio
+    type: NUMERIC(7,4)
+    nullable: true
+    note: 매출 대비 광고비 비율 기본값. 4자리 소수 비율
+
+audit_columns: true
+policy_columns: true
+
+constraints: []
+
+indexes: []
+
+foreign_keys: []
+
+referenced_by: []
+
+notes: |
+  - target_roas / default_ad_ratio 중 하나로 광고비 추정.

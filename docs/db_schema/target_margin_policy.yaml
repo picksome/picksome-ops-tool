@@ -1,0 +1,41 @@
+table: target_margin_policy
+purpose: 카테고리/마진유형별 목표 마진율. 가격 시뮬레이터 / 경고선 기준.
+section: 3-B 정책
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: category_path
+    type: TEXT
+    nullable: true
+  - name: margin_type
+    type: enum_margin_type
+    nullable: true
+    enum_values: [PURCHASE_AGENCY, ROCKET_GROWTH, OVERSEAS_DIRECT, GENERAL_RESELL]
+  - name: target_rate
+    type: NUMERIC(7,4)
+    nullable: false
+    note: 4자리 소수 비율 (0.1234 = 12.34%)
+  - name: warning_lower_rate
+    type: NUMERIC(7,4)
+    nullable: true
+    note: 경고 하한선. 실 마진율이 이보다 낮으면 알림 — 4자리 소수 비율
+
+audit_columns: true
+policy_columns: true
+
+constraints: []
+
+indexes: []
+
+foreign_keys: []
+
+referenced_by: []
+
+notes: |
+  - 가격 시뮬레이션 (`simulate_recommended_prices`) 의 기준.
+  - 마진율 하락 알림 (notification.kind = MARGIN_DROP) 의 임계치.

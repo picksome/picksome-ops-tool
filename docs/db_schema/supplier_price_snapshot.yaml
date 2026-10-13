@@ -1,0 +1,45 @@
+table: supplier_price_snapshot
+purpose: 외부 공급사의 가격 변동 추적 박제. 도매꾹/1688 크롤링 결과.
+section: 3-L 외부 연동 (Post-MVP)
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: supplier_id
+    type: UUID
+    nullable: false
+  - name: external_product_id
+    type: TEXT
+    nullable: false
+  - name: price
+    type: BIGINT
+    nullable: false
+    note: 원 단위 정수 (KRW) 또는 외화 (currency 별도)
+  - name: currency
+    type: TEXT
+    nullable: false
+  - name: observed_at
+    type: TIMESTAMPTZ
+    nullable: false
+    default: now()
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys:
+  - column: supplier_id
+    references: external_partner.id
+
+referenced_by: []
+
+notes: |
+  - Post-MVP 슬롯. 가격 변동 알림 (CLAUDE.md Roadmap) 의 source.
+  - INSERT only — 시계열 박제.

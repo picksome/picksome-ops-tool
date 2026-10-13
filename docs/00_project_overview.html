@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PICKSOME OPS TOOL — Project Overview</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#eef2ff',
+      primaryTextColor: '#1e293b',
+      primaryBorderColor: '#6366f1',
+      lineColor: '#6366f1',
+      secondaryColor: '#fef3c7',
+      tertiaryColor: '#dcfce7',
+      fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, sans-serif'
+    },
+    flowchart: { curve: 'basis', htmlLabels: true }
+  });
+</script>
+<style>
+  :root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #eef2ff;
+    --success: #10b981;
+    --success-light: #dcfce7;
+    --warning: #f59e0b;
+    --warning-light: #fef3c7;
+    --danger: #ef4444;
+    --danger-light: #fee2e2;
+    --info: #0ea5e9;
+    --info-light: #e0f2fe;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-500: #64748b;
+    --gray-700: #334155;
+    --gray-900: #0f172a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    color: var(--gray-900);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    color: white;
+    padding: 60px 48px;
+    border-radius: 24px;
+    margin-bottom: 48px;
+    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -10%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+    position: relative;
+  }
+  .hero .subtitle {
+    font-size: 20px;
+    opacity: 0.95;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .hero-meta div { font-size: 14px; opacity: 0.85; }
+  .hero-meta strong { display: block; font-size: 16px; opacity: 1; margin-top: 4px; }
+
+  /* TOC */
+  .toc {
+    background: white;
+    border-radius: 16px;
+    padding: 24px 32px;
+    margin-bottom: 48px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    border: 1px solid var(--gray-200);
+  }
+  .toc h3 { font-size: 16px; color: var(--gray-500); margin-bottom: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+  }
+  .toc a {
+    color: var(--gray-700);
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toc a:hover { background: var(--primary-light); color: var(--primary-dark); }
+  .toc-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* Section */
+  section {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 48px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    border: 1px solid var(--gray-200);
+  }
+  h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--gray-100);
+  }
+  .section-num {
+    background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+  h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 28px;
+    margin-bottom: 16px;
+    color: var(--gray-900);
+  }
+  h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 20px;
+    margin-bottom: 12px;
+    color: var(--gray-700);
+  }
+  p { margin-bottom: 12px; color: var(--gray-700); }
+
+  /* Goal Cards */
+  .goal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 24px 0;
+  }
+  .goal-card {
+    padding: 28px;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: transform 0.2s;
+  }
+  .goal-card:hover { transform: translateY(-4px); }
+  .goal-card.mvp { background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%); border-color: var(--success); }
+  .goal-card.post { background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); border-color: #8b5cf6; }
+  .goal-card.out { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-color: var(--danger); }
+  .goal-icon { font-size: 28px; margin-bottom: 12px; }
+  .goal-card h4 { font-size: 18px; margin-top: 0; margin-bottom: 12px; }
+  .goal-card ul { list-style: none; padding: 0; }
+  .goal-card li {
+    padding: 6px 0 6px 24px;
+    position: relative;
+    font-size: 14px;
+    color: var(--gray-700);
+  }
+  .goal-card.mvp li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: 700; }
+  .goal-card.post li::before { content: '◆'; position: absolute; left: 0; color: #8b5cf6; }
+  .goal-card.out li::before { content: '✗'; position: absolute; left: 0; color: var(--danger); font-weight: 700; }
+
+  /* MoSCoW */
+  .moscow-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .moscow-card {
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid var(--gray-200);
+    background: var(--gray-50);
+  }
+  .moscow-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .moscow-card.must .moscow-badge { background: var(--danger); color: white; }
+  .moscow-card.should .moscow-badge { background: var(--warning); color: white; }
+  .moscow-card.could .moscow-badge { background: var(--info); color: white; }
+  .moscow-card.wont .moscow-badge { background: var(--gray-500); color: white; }
+  .moscow-card ul { list-style: none; padding: 0; font-size: 13px; }
+  .moscow-card li { padding: 4px 0; color: var(--gray-700); }
+
+  /* Must list - more detailed */
+  .must-detail {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .must-item {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-left: 4px solid var(--warning);
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .must-num {
+    background: white;
+    color: var(--warning);
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  /* Tech Stack */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .tech-card {
+    background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+    border: 1px solid var(--gray-200);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .tech-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
+  }
+  .tech-emoji { font-size: 32px; margin-bottom: 8px; }
+  .tech-label { font-size: 12px; color: var(--gray-500); text-transform: uppercase; letter-spacing: 1px; }
+  .tech-value { font-size: 15px; font-weight: 700; color: var(--gray-900); margin-top: 4px; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 20px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  thead { background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%); }
+  th {
+    padding: 14px 18px;
+    text-align: left;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+  }
+  td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 14px;
+    color: var(--gray-700);
+    background: white;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--gray-50); }
+  td code {
+    background: var(--gray-100);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--primary-dark);
+    font-family: 'JetBrains Mono', Consolas, monospace;
+  }
+
+  /* RBAC Cards */
+  .rbac-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .rbac-card {
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid var(--gray-200);
+    background: white;
+    position: relative;
+  }
+  .rbac-card.admin { border-color: var(--danger); }
+  .rbac-card.admin .role-badge { background: var(--danger); }
+  .rbac-card.operator { border-color: var(--primary); }
+  .rbac-card.operator .role-badge { background: var(--primary); }
+  .rbac-card.sourcing { border-color: var(--success); }
+  .rbac-card.sourcing .role-badge { background: var(--success); }
+  .rbac-card.accounting { border-color: var(--warning); }
+  .rbac-card.accounting .role-badge { background: var(--warning); }
+  .rbac-card.readonly { border-color: var(--gray-500); }
+  .rbac-card.readonly .role-badge { background: var(--gray-500); }
+  .rbac-card.external { border-color: var(--info); }
+  .rbac-card.external .role-badge { background: var(--info); }
+  .role-badge {
+    display: inline-block;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .rbac-card .role-name { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--gray-900); }
+  .rbac-card .role-desc { font-size: 13px; color: var(--gray-500); }
+
+  /* Code block */
+  .code-block {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 20px 24px;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 16px 0;
+    overflow-x: auto;
+    white-space: pre;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+  .code-block .kw { color: #c4b5fd; font-weight: 600; }
+  .code-block .str { color: #fde68a; }
+  .code-block .comment { color: #94a3b8; }
+
+  /* Diagram Container */
+  .diagram {
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    padding: 32px;
+    border-radius: 16px;
+    margin: 20px 0;
+    border: 1px solid var(--gray-200);
+    text-align: center;
+  }
+  .diagram .mermaid { display: inline-block; }
+
+  /* Phase timeline */
+  .timeline {
+    position: relative;
+    margin: 24px 0;
+  }
+  .timeline-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 16px 0;
+    position: relative;
+  }
+  .timeline-marker {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+  .timeline-marker .phase-num { font-size: 18px; }
+  .timeline-marker .phase-label { font-size: 9px; letter-spacing: 0.5px; }
+  .timeline-content {
+    flex: 1;
+    padding: 16px 20px;
+    background: var(--gray-50);
+    border-radius: 12px;
+    border-left: 4px solid var(--primary);
+  }
+  .timeline-content .phase-title { font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+  .timeline-content .phase-desc { font-size: 14px; color: var(--gray-700); }
+
+  /* Risk grid */
+  .risk-row {
+    display: grid;
+    grid-template-columns: 1fr 100px 2fr;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--gray-50);
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .risk-impact {
+    padding: 6px 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .impact-high { background: var(--danger-light); color: var(--danger); }
+  .impact-med { background: var(--warning-light); color: #d97706; }
+  .impact-low { background: var(--info-light); color: var(--info); }
+  .risk-title { font-weight: 600; color: var(--gray-900); }
+  .risk-mitigation { font-size: 13px; color: var(--gray-700); }
+
+  /* Open Items */
+  .open-list { list-style: none; padding: 0; counter-reset: open; }
+  .open-item {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-left: 4px solid var(--warning);
+    padding: 14px 18px 14px 56px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    position: relative;
+    counter-increment: open;
+    font-size: 14px;
+    color: var(--gray-700);
+  }
+  .open-item::before {
+    content: counter(open);
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px; height: 30px;
+    background: var(--warning);
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .open-item strong { color: var(--gray-900); }
+
+  /* Next steps */
+  .next-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .next-card {
+    background: linear-gradient(135deg, var(--primary-light) 0%, white 100%);
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+  }
+  .next-card .step {
+    background: var(--primary);
+    color: white;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .next-card .step-title { font-weight: 700; font-size: 14px; color: var(--gray-900); margin-bottom: 4px; }
+  .next-card .step-desc { font-size: 12px; color: var(--gray-500); }
+
+  /* Refs */
+  .ref-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .ref-card {
+    padding: 14px 18px;
+    background: var(--gray-50);
+    border-radius: 10px;
+    border: 1px solid var(--gray-200);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ref-card code {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  /* Security badges */
+  .security-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .security-item {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-left: 4px solid var(--danger);
+    padding: 14px 16px;
+    border-radius: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .security-item .icon { font-size: 20px; flex-shrink: 0; }
+  .security-item .text { font-size: 13px; color: var(--gray-700); }
+
+  /* Calc rules */
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .calc-item {
+    background: white;
+    border: 2px solid var(--primary-light);
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+  .calc-item code {
+    background: var(--gray-100);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--primary-dark);
+  }
+
+  /* Snapshot pattern */
+  .snapshot-flow {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    justify-content: center;
+  }
+  .snapshot-box {
+    background: linear-gradient(135deg, var(--primary-light) 0%, white 100%);
+    border: 2px solid var(--primary);
+    padding: 16px 24px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 180px;
+  }
+  .snapshot-box .label { font-size: 12px; color: var(--gray-500); text-transform: uppercase; letter-spacing: 1px; }
+  .snapshot-box .value { font-size: 15px; font-weight: 700; color: var(--gray-900); margin-top: 4px; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--gray-500);
+    font-size: 13px;
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 20px 16px; }
+    .hero { padding: 40px 24px; }
+    .hero h1 { font-size: 32px; }
+    section { padding: 24px; }
+    h2 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">📋 Project Overview · PM / Architect</div>
+    <h1>PICKSOME OPS TOOL</h1>
+    <div class="subtitle">셀러 운영 자동화 SaaS — 엑셀에서 SaaS로</div>
+    <div class="hero-meta">
+      <div>작성<strong>PM / Architect</strong></div>
+      <div>작성일<strong>2026-06-17</strong></div>
+      <div>상태<strong>MVP Scope 확정</strong></div>
+      <div>다음<strong>Planner → PRD</strong></div>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>📑 목차</h3>
+    <div class="toc-grid">
+      <a href="#s1"><span class="toc-num">1</span> Vision & Goal</a>
+      <a href="#s2"><span class="toc-num">2</span> MVP Scope</a>
+      <a href="#s3"><span class="toc-num">3</span> Tech Stack</a>
+      <a href="#s4"><span class="toc-num">4</span> 핵심 모델</a>
+      <a href="#s5"><span class="toc-num">5</span> RBAC</a>
+      <a href="#s6"><span class="toc-num">6</span> 외부 연동</a>
+      <a href="#s7"><span class="toc-num">7</span> 보안 핵심</a>
+      <a href="#s8"><span class="toc-num">8</span> 계산 규칙</a>
+      <a href="#s9"><span class="toc-num">9</span> 작업 순서</a>
+      <a href="#s10"><span class="toc-num">10</span> 리스크</a>
+      <a href="#s11"><span class="toc-num">11</span> Open Items</a>
+      <a href="#s12"><span class="toc-num">12</span> 다음 단계</a>
+    </div>
+  </div>
+
+  <!-- 1. Vision & Goal -->
+  <section id="s1">
+    <h2><span class="section-num">1</span> Vision & Goal</h2>
+    <div class="goal-grid">
+      <div class="goal-card mvp">
+        <div class="goal-icon">🚀</div>
+        <h4>1차 목표 (MVP)</h4>
+        <p style="font-size:13px; color:var(--gray-500); margin-bottom:12px;">픽썸 내부 운영 SaaS</p>
+        <ul>
+          <li>엑셀 마진계산기&장부 프로세스 프로그램화</li>
+          <li>마진계산·판매장부·사업비용</li>
+          <li>월별정산·세무사 제출용 리포트 자동화</li>
+        </ul>
+      </div>
+      <div class="goal-card post">
+        <div class="goal-icon">🌐</div>
+        <h4>최종 목표 (Post-MVP)</h4>
+        <p style="font-size:13px; color:var(--gray-500); margin-bottom:12px;">범용 셀러 운영 자동화 SaaS</p>
+        <ul>
+          <li>다른 셀러도 사용 가능</li>
+          <li>마켓 정산·공급처 가격 자동 수집</li>
+          <li>정책값 자동 감지 + 관리자 승인</li>
+          <li>세무사 협업 모드</li>
+        </ul>
+      </div>
+      <div class="goal-card out">
+        <div class="goal-icon">🚫</div>
+        <h4>비목표 (Out of Scope)</h4>
+        <p style="font-size:13px; color:var(--gray-500); margin-bottom:12px;">절대 포함하지 않음</p>
+        <ul>
+          <li>세무 신고 자동 대체</li>
+          <li>판매 사이트 자체 운영</li>
+          <li>결제 모듈</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. MVP Scope -->
+  <section id="s2">
+    <h2><span class="section-num">2</span> MVP Scope</h2>
+
+    <h3>🎯 Must — 도메인 (반드시 포함)</h3>
+    <div class="must-detail">
+      <div class="must-item"><span class="must-num">1</span> 상품 관리 + 소싱 후보</div>
+      <div class="must-item"><span class="must-num">2</span> 마진 계산기 (4종)</div>
+      <div class="must-item"><span class="must-num">3</span> 예상 마진 (정책 자동값)</div>
+      <div class="must-item"><span class="must-num">4</span> 실마진 (정산 import)</div>
+      <div class="must-item"><span class="must-num">5</span> 등록가 시뮬레이션</div>
+      <div class="must-item"><span class="must-num">6</span> 판매 장부</div>
+      <div class="must-item"><span class="must-num">7</span> 사업비용 + 증빙</div>
+      <div class="must-item"><span class="must-num">8</span> 쿠팡 정산 기록</div>
+      <div class="must-item"><span class="must-num">9</span> 월별 정산 + 파트너</div>
+      <div class="must-item"><span class="must-num">10</span> 세무사 제출용 리포트</div>
+      <div class="must-item"><span class="must-num">11</span> 대시보드</div>
+    </div>
+
+    <h3>⚙️ Must — 횡단 기능</h3>
+    <div class="must-detail">
+      <div class="must-item"><span class="must-num">12</span> 정책 관리 (12종)</div>
+      <div class="must-item"><span class="must-num">13</span> RBAC (5역할+세무사)</div>
+      <div class="must-item"><span class="must-num">14</span> 감사 로그</div>
+      <div class="must-item"><span class="must-num">15</span> 정산 확정 잠금</div>
+      <div class="must-item"><span class="must-num">16</span> 인라인 편집/일괄</div>
+      <div class="must-item"><span class="must-num">17</span> 모바일 반응형</div>
+      <div class="must-item"><span class="must-num">18</span> Excel import/export</div>
+      <div class="must-item"><span class="must-num">19</span> 분기 부가세 리포트</div>
+      <div class="must-item"><span class="must-num">20</span> 이메일 알림</div>
+    </div>
+
+    <h3>📊 MoSCoW 우선순위</h3>
+    <div class="moscow-grid">
+      <div class="moscow-card must">
+        <span class="moscow-badge">Must</span>
+        <p style="font-size:13px; color:var(--gray-500);">상위 20개 항목 (위 참조)</p>
+      </div>
+      <div class="moscow-card should">
+        <span class="moscow-badge">Should</span>
+        <ul>
+          <li>• 카카오톡/슬랙 알림</li>
+          <li>• 매입-매출 대사 리포트(상세)</li>
+          <li>• 대량 일괄 처리 (CSV)</li>
+        </ul>
+      </div>
+      <div class="moscow-card could">
+        <span class="moscow-badge">Could</span>
+        <ul>
+          <li>• task 관리 (운영 체크리스트)</li>
+          <li>• 다크 테마</li>
+        </ul>
+      </div>
+      <div class="moscow-card wont">
+        <span class="moscow-badge">Won't</span>
+        <ul>
+          <li>• 자동 크롤링</li>
+          <li>• 쿠팡/스마트스토어 API</li>
+          <li>• 영수증 파일 첨부</li>
+          <li>• 다국어/다통화 UI</li>
+          <li>• 상품 옵션 (사이즈/색상)</li>
+          <li>• 온보딩 마법사</li>
+          <li>• AI OCR 비용 분류</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Tech Stack -->
+  <section id="s3">
+    <h2><span class="section-num">3</span> Tech Stack (확정)</h2>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-emoji">⚛️</div>
+        <div class="tech-label">Frontend</div>
+        <div class="tech-value">Next.js + React + TS + Tailwind</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-emoji">🐍</div>
+        <div class="tech-label">Backend</div>
+        <div class="tech-value">FastAPI + Python 3.12 + SQLAlchemy 2</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-emoji">🐘</div>
+        <div class="tech-label">Database</div>
+        <div class="tech-value">PostgreSQL 16</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-emoji">📊</div>
+        <div class="tech-label">Excel</div>
+        <div class="tech-value">openpyxl + xlsxwriter</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-emoji">🐳</div>
+        <div class="tech-label">DevOps</div>
+        <div class="tech-value">Docker Compose</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-emoji">🔐</div>
+        <div class="tech-label">인증</div>
+        <div class="tech-value">JWT (이메일+비번)</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-emoji">🕐</div>
+        <div class="tech-label">시각</div>
+        <div class="tech-value">TIMESTAMPTZ (UTC→KST)</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-emoji">₩</div>
+        <div class="tech-label">통화</div>
+        <div class="tech-value">KRW (정수)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 핵심 모델 -->
+  <section id="s4">
+    <h2><span class="section-num">4</span> 핵심 모델 요약</h2>
+
+    <h3>4-1. 정책 테이블 패밀리 (12종)</h3>
+    <table>
+      <thead>
+        <tr><th style="width:30%;">테이블</th><th>용도</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>marketplace_fee_policy</code></td><td>마켓·카테고리별 판매 수수료 (RATE/FIXED/TIERED)</td></tr>
+        <tr><td><code>payment_fee_policy</code></td><td>결제수단 수수료</td></tr>
+        <tr><td><code>tax_policy</code></td><td>세금률·과세유형 (GENERAL/SIMPLE/EXEMPT)</td></tr>
+        <tr><td><code>fulfillment_fee_policy</code></td><td>풀필먼트 입고/출고/보관/반품처리</td></tr>
+        <tr><td><code>return_risk_policy</code></td><td>반품 위험률 (마켓·카테고리별)</td></tr>
+        <tr><td><code>ad_cost_policy</code></td><td>광고비 기본값·ROAS</td></tr>
+        <tr><td><code>target_margin_policy</code></td><td>카테고리별 목표 마진율 + 경고 임계값</td></tr>
+        <tr><td><code>settlement_policy</code></td><td>사업비/우선분배/적자 정책</td></tr>
+        <tr><td><code>partner_share_policy</code></td><td>월별·파트너별 분배 비율</td></tr>
+        <tr><td><code>expense_category_policy</code></td><td>비용 카테고리 (세무공제/정산공제 기본)</td></tr>
+        <tr><td><code>evidence_type_policy</code></td><td>증빙 유형 (공식/비공식)</td></tr>
+        <tr><td><code>policy_change_history</code></td><td>모든 정책 변경 통합 로그</td></tr>
+      </tbody>
+    </table>
+
+    <div style="background:var(--primary-light); padding:16px 20px; border-radius:12px; margin:16px 0;">
+      <strong style="color:var(--primary-dark);">📌 공통 컬럼</strong>
+      <p style="margin-top:8px; font-size:14px;"><code style="background:white; padding:2px 8px; border-radius:4px;">version</code> · <code style="background:white; padding:2px 8px; border-radius:4px;">effective_from</code> · <code style="background:white; padding:2px 8px; border-radius:4px;">effective_to</code> · <code style="background:white; padding:2px 8px; border-radius:4px;">source_type</code> · <code style="background:white; padding:2px 8px; border-radius:4px;">approved_by/at</code> + audit</p>
+      <strong style="color:var(--primary-dark); display:block; margin-top:12px;">🏷️ 신뢰도 상태</strong>
+      <p style="margin-top:8px; font-size:13px;">
+        <span style="background:var(--success); color:white; padding:3px 8px; border-radius:5px; margin-right:4px;">CONFIRMED</span>
+        <span style="background:var(--info); color:white; padding:3px 8px; border-radius:5px; margin-right:4px;">AUTO_DETECTED</span>
+        <span style="background:var(--warning); color:white; padding:3px 8px; border-radius:5px; margin-right:4px;">NEEDS_REVIEW</span>
+        <span style="background:var(--gray-500); color:white; padding:3px 8px; border-radius:5px; margin-right:4px;">EXPIRED</span>
+        <span style="background:#8b5cf6; color:white; padding:3px 8px; border-radius:5px; margin-right:4px;">MANUAL_OVERRIDE</span>
+        <span style="background:var(--danger); color:white; padding:3px 8px; border-radius:5px;">DEPRECATED</span>
+      </p>
+    </div>
+
+    <h3>4-2. Snapshot 패턴</h3>
+    <p>모든 계산 결과는 <strong>정책 snapshot</strong>을 박제한다 — 과거 재현 가능성 보장.</p>
+    <div class="snapshot-flow">
+      <div class="snapshot-box">
+        <div class="label">정책</div>
+        <div class="value">policy_table</div>
+      </div>
+      <div style="align-self:center; font-size:24px; color:var(--primary);">→</div>
+      <div class="snapshot-box">
+        <div class="label">참조</div>
+        <div class="value">FK + version</div>
+      </div>
+      <div style="align-self:center; font-size:24px; color:var(--primary);">+</div>
+      <div class="snapshot-box">
+        <div class="label">박제</div>
+        <div class="value">JSONB snapshot</div>
+      </div>
+      <div style="align-self:center; font-size:24px; color:var(--primary);">→</div>
+      <div class="snapshot-box">
+        <div class="label">계산 결과</div>
+        <div class="value">margin_expected</div>
+      </div>
+    </div>
+
+    <h3>4-3. 정산 모델</h3>
+    <div class="code-block"><span class="comment"># 정산 계산 공식</span>
+순이익 = 매출 - 상품 직접비(원가/수수료/광고/반품/풀필먼트/배송) - 공통 사업비(expenses 합)
+분배   = 우선분배(priority) 후 → 비율 분배 (N명)
+적자   = carryover (다음 흑자월 우선 차감)
+확정   = DRAFT → CONFIRMED → LOCKED (REOPENED 시 audit 동반)</div>
+
+    <div class="diagram">
+      <div class="mermaid">
+flowchart LR
+  A[DRAFT] -->|확정| B[CONFIRMED]
+  B -->|잠금| C[LOCKED]
+  C -.->|재개<br/>+ audit| D[REOPENED]
+  D -->|재확정| B
+  style A fill:#fef3c7,stroke:#f59e0b
+  style B fill:#dcfce7,stroke:#10b981
+  style C fill:#dbeafe,stroke:#3b82f6
+  style D fill:#fee2e2,stroke:#ef4444
+      </div>
+    </div>
+
+    <h3>4-4. 세무 리포트 (MVP 필수)</h3>
+    <table>
+      <thead><tr><th>리포트</th><th>주기</th><th>형식</th></tr></thead>
+      <tbody>
+        <tr><td>월별 매출 / 매입 / 사업비용</td><td>월간</td><td>Excel</td></tr>
+        <tr><td>판매처별 매출</td><td>월간</td><td>Excel</td></tr>
+        <tr><td>상품별 손익</td><td>월간</td><td>Excel</td></tr>
+        <tr><td>쿠팡 정산 대사</td><td>월간</td><td>Excel</td></tr>
+        <tr><td>부가세 참고</td><td>분기</td><td>Excel</td></tr>
+        <tr><td>파트너별 수익배분</td><td>월간</td><td>Excel</td></tr>
+        <tr><td>증빙 누락</td><td>월간</td><td>Excel</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:12px;">📁 파일명 규칙: <code style="background:var(--gray-100); padding:4px 10px; border-radius:6px;">YYYY-MM_{리포트명}.xlsx</code> · 한국어 컬럼명</p>
+  </section>
+
+  <!-- 5. RBAC -->
+  <section id="s5">
+    <h2><span class="section-num">5</span> RBAC — 6개 역할</h2>
+    <div class="rbac-grid">
+      <div class="rbac-card admin">
+        <span class="role-badge">ADMIN</span>
+        <div class="role-name">관리자</div>
+        <div class="role-desc">전체 권한. 사용자 관리, 정책 승인</div>
+      </div>
+      <div class="rbac-card operator">
+        <span class="role-badge">OPERATOR</span>
+        <div class="role-name">운영 담당자</div>
+        <div class="role-desc">상품·판매장부·마진계산 입력/수정</div>
+      </div>
+      <div class="rbac-card sourcing">
+        <span class="role-badge">SOURCING</span>
+        <div class="role-name">상품 소싱</div>
+        <div class="role-desc">소싱 후보·상품 등록</div>
+      </div>
+      <div class="rbac-card accounting">
+        <span class="role-badge">ACCOUNTING</span>
+        <div class="role-name">회계/세무</div>
+        <div class="role-desc">사업비용·정산·세무 리포트</div>
+      </div>
+      <div class="rbac-card readonly">
+        <span class="role-badge">READONLY</span>
+        <div class="role-name">읽기 전용</div>
+        <div class="role-desc">대시보드·장부·정산 조회</div>
+      </div>
+      <div class="rbac-card external">
+        <span class="role-badge">EXTERNAL</span>
+        <div class="role-name">외부 세무사</div>
+        <div class="role-desc">읽기 + 코멘트 + 증빙상태 변경</div>
+      </div>
+    </div>
+    <div style="background:var(--warning-light); padding:14px 18px; border-radius:10px; margin-top:16px; border-left:4px solid var(--warning);">
+      <strong>⚠️ 중요</strong>: MVP에서 화면을 다 안 만들어도 <strong>DB·서비스 계층은 role 기반 접근제어가 동작</strong>해야 한다.
+    </div>
+  </section>
+
+  <!-- 6. 외부 연동 -->
+  <section id="s6">
+    <h2><span class="section-num">6</span> 외부 연동 로드맵</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-marker"><div class="phase-num">MVP</div><div class="phase-label">PHASE 1</div></div>
+        <div class="timeline-content">
+          <div class="phase-title">수동 입력 + 엑셀 import/export</div>
+          <div class="phase-desc">기본 정산·장부 데이터 입력</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-marker"><div class="phase-num">2</div><div class="phase-label">PHASE 2</div></div>
+        <div class="timeline-content">
+          <div class="phase-title">쿠팡 정산 import</div>
+          <div class="phase-desc">CSV 업로드 → 자동 매칭</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-marker"><div class="phase-num">3</div><div class="phase-label">PHASE 3</div></div>
+        <div class="timeline-content">
+          <div class="phase-title">마켓 API 연동</div>
+          <div class="phase-desc">쿠팡 / 스마트스토어 API 직접 연동</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-marker"><div class="phase-num">4</div><div class="phase-label">PHASE 4</div></div>
+        <div class="timeline-content">
+          <div class="phase-title">공급처 크롤링</div>
+          <div class="phase-desc">도매꾹/1688 가격·재고 크롤링 (야간 배치)</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-marker"><div class="phase-num">5</div><div class="phase-label">PHASE 5</div></div>
+        <div class="timeline-content">
+          <div class="phase-title">정책값 자동 감지</div>
+          <div class="phase-desc">관리자 승인 워크플로우</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-marker"><div class="phase-num">6</div><div class="phase-label">PHASE 6</div></div>
+        <div class="timeline-content">
+          <div class="phase-title">알림 + 자동화</div>
+          <div class="phase-desc">카카오/슬랙 알림, 자동 정산 워크플로우</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--info-light); padding:16px 20px; border-radius:12px; margin-top:16px;">
+      <strong style="color:var(--info);">🔧 처음부터 갖춰야 할 인터페이스</strong>
+      <p style="font-size:13px; margin-top:8px;">
+        <code>integration_account</code> · <code>integration_job</code> · <code>batch_run</code> · <code>batch_run_log</code><br>
+        <code>external_product_mapping</code> · <code>supplier_price_snapshot</code><br>
+        <code>marketplace_order_import</code> · <code>marketplace_settlement_import</code>
+      </p>
+    </div>
+  </section>
+
+  <!-- 7. 보안 -->
+  <section id="s7">
+    <h2><span class="section-num">7</span> 보안 핵심</h2>
+    <div class="security-grid">
+      <div class="security-item">
+        <div class="icon">🔒</div>
+        <div class="text"><strong>평문 저장 절대 금지</strong><br>비밀번호·계좌비번·카드비번·인증서 비번·주민번호</div>
+      </div>
+      <div class="security-item">
+        <div class="icon">📦</div>
+        <div class="text"><strong>보관 위치만 저장</strong><br><code>password_vault_entry</code> = "Bitwarden - 쿠팡 Wing"</div>
+      </div>
+      <div class="security-item">
+        <div class="icon">🛡️</div>
+        <div class="text"><strong>DB CHECK 제약</strong><br>평문 비밀번호 패턴 거부 (트리거)</div>
+      </div>
+      <div class="security-item">
+        <div class="icon">📝</div>
+        <div class="text"><strong>로그 마스킹</strong><br>로그·에러 메시지에서 민감정보 마스킹</div>
+      </div>
+      <div class="security-item">
+        <div class="icon">🎭</div>
+        <div class="text"><strong>가짜 데이터만</strong><br>DB seed/샘플은 가짜 데이터만</div>
+      </div>
+      <div class="security-item">
+        <div class="icon">🚫</div>
+        <div class="text"><strong>엑셀 비밀번호 이관 금지</strong><br>사용자 별도 안내</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. 계산 규칙 -->
+  <section id="s8">
+    <h2><span class="section-num">8</span> 계산 규칙 (재확인)</h2>
+    <div class="calc-grid">
+      <div class="calc-item">💰 <strong>금액</strong>: <code>BIGINT</code>(원) 또는 <code>Decimal</code> · <code>float</code> 금지</div>
+      <div class="calc-item">📊 <strong>비율</strong>: <code>Decimal(7,4)</code></div>
+      <div class="calc-item">⚙️ <strong>핵심 로직</strong>: BE service layer</div>
+      <div class="calc-item">📸 <strong>모든 계산</strong>: 정책 snapshot 박제</div>
+      <div class="calc-item">🐍 <strong>엑셀 수식</strong>: 명명된 Python 함수로 재작성</div>
+    </div>
+  </section>
+
+  <!-- 9. 작업 순서 -->
+  <section id="s9">
+    <h2><span class="section-num">9</span> 역할 작업 순서</h2>
+    <div class="diagram">
+      <div class="mermaid">
+flowchart TD
+  PM([PM/Architect ✅ 본 문서]) --> Planner([Planner — PRD 작성<br/>← Next])
+  Planner --> DBA([DBA — ERD + DDL])
+  Planner --> BE([Backend — API + 계산])
+  DBA --> Designer([Designer — 와이어프레임])
+  BE --> Designer
+  Designer --> FE([Frontend — 라우팅/컴포넌트])
+  FE --> DevOps([DevOps — Docker + 배포])
+  DevOps --> User([User/세무 검증])
+  User --> Final([PM 최종 통합 + Decision Log])
+  Final --> Code([실제 코드 생성<br/>사용자 승인 후])
+
+  style PM fill:#dcfce7,stroke:#10b981,stroke-width:2px
+  style Planner fill:#fef3c7,stroke:#f59e0b,stroke-width:3px
+  style Code fill:#fee2e2,stroke:#ef4444,stroke-width:2px
+  style DBA fill:#dbeafe,stroke:#3b82f6
+  style BE fill:#dbeafe,stroke:#3b82f6
+      </div>
+    </div>
+    <p style="text-align:center; color:var(--gray-500); font-size:13px; margin-top:12px;">📌 DBA와 Backend는 병렬 진행 가능</p>
+  </section>
+
+  <!-- 10. 리스크 -->
+  <section id="s10">
+    <h2><span class="section-num">10</span> 리스크 & 완화</h2>
+    <div class="risk-row" style="background:var(--gray-100); font-weight:700;">
+      <div>리스크</div>
+      <div style="text-align:center;">영향</div>
+      <div>완화 전략</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-title">MVP 범위 팽창 (세무 리포트·정책 12종·RBAC·감사로그)</div>
+      <div class="risk-impact impact-high">일정 지연</div>
+      <div class="risk-mitigation">Should/Could 단계 미루기, 정책 seed 미리 준비</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-title">정책 12종 초기 설정 부담</div>
+      <div class="risk-impact impact-med">사용성 저하</div>
+      <div class="risk-mitigation">마이그레이션 마법사 + 기본 정책 seed</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-title">사업 형태 미확정 (공동/단독)</div>
+      <div class="risk-impact impact-high">세무·정산 표현</div>
+      <div class="risk-mitigation">사용자 즉답 필요</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-title">적자 정책의 세무적 합법성</div>
+      <div class="risk-impact impact-med">분쟁 가능</div>
+      <div class="risk-mitigation">세무사 검토 의무화 + 정책 변경 이력</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-title">Audit log 증가</div>
+      <div class="risk-impact impact-low">DB 크기</div>
+      <div class="risk-mitigation">월별 파티셔닝 + 보관 정책 (예: 2년)</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-title">snapshot JSONB 비대</div>
+      <div class="risk-impact impact-low">행 크기</div>
+      <div class="risk-mitigation">TOAST 압축, 큰 snapshot 분리 저장</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-title">정책 row hard delete 시 snapshot 깨짐</div>
+      <div class="risk-impact impact-high">데이터 무결성</div>
+      <div class="risk-mitigation">hard delete 금지 + soft delete + DEPRECATED</div>
+    </div>
+  </section>
+
+  <!-- 11. Open Items -->
+  <section id="s11">
+    <h2><span class="section-num">11</span> 사용자 결정 필요 (Open Items)</h2>
+    <p style="margin-bottom:16px; color:var(--gray-500);">📋 PM이 단독 결정할 수 없는 항목 — <code>docs/10_decision_log.md</code> 참조</p>
+    <ol class="open-list">
+      <li class="open-item"><strong>사업 형태</strong>: 공동사업자(공동대표) vs 단독+직원/외주 — RBAC/세무/정산 표현에 영향</li>
+      <li class="open-item"><strong>알림 채널 우선순위</strong>: 이메일만(MVP) vs 카카오톡/슬랙 동시</li>
+      <li class="open-item"><strong>세무사 실 합류 여부</strong>: 세무사 계정 초대 기능을 실제로 사용할 것인가</li>
+      <li class="open-item"><strong>ID 타입</strong>: BIGSERIAL (간단) vs UUID (SaaS 확장 친화)</li>
+      <li class="open-item"><strong>공급가액/부가세 자동 분리 정책</strong>: total만 입력 시 자동 분할 적용?</li>
+      <li class="open-item"><strong>정산 REOPENED 횟수 제한</strong>: 무제한 vs N회 제한</li>
+      <li class="open-item"><strong>product 옵션 슬롯 사전 준비 여부</strong>: Post-MVP라도 DB에 컬럼 미리 둘까</li>
+    </ol>
+  </section>
+
+  <!-- 12. 다음 단계 -->
+  <section id="s12">
+    <h2><span class="section-num">12</span> 다음 단계 (Immediate Next)</h2>
+    <div class="next-grid">
+      <div class="next-card">
+        <div class="step">1</div>
+        <div class="step-title">Open Items 답변</div>
+        <div class="step-desc">→ docs/10_decision_log.md 반영</div>
+      </div>
+      <div class="next-card">
+        <div class="step">2</div>
+        <div class="step-title">Planner 진행</div>
+        <div class="step-desc">→ docs/20_prd.md (PRD: 사용자 시나리오·스토리·완료 기준)</div>
+      </div>
+      <div class="next-card">
+        <div class="step">3</div>
+        <div class="step-title">DBA + Backend 병렬</div>
+        <div class="step-desc">→ docs/21_erd.md, 22_api_spec.md</div>
+      </div>
+      <div class="next-card">
+        <div class="step">4</div>
+        <div class="step-title">Designer → FE → DevOps</div>
+        <div class="step-desc">→ 화면·구조·배포</div>
+      </div>
+      <div class="next-card">
+        <div class="step">5</div>
+        <div class="step-title">User/세무 검증</div>
+        <div class="step-desc">→ 실 데이터 검증</div>
+      </div>
+      <div class="next-card">
+        <div class="step">6</div>
+        <div class="step-title">코드 생성</div>
+        <div class="step-desc">→ 최종 통합 후</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 참고 문서 -->
+  <section>
+    <h2><span class="section-num">📎</span> 참고 문서</h2>
+    <div class="ref-grid">
+      <div class="ref-card">📊 <code>_excel_analysis.md</code> 엑셀 원본 분석</div>
+      <div class="ref-card">💬 <code>_planning_session.md</code> 라운드테이블 결과</div>
+      <div class="ref-card">🗄️ <code>_schema_design.md</code> DBA+BE 기술 세션</div>
+      <div class="ref-card">🤝 <code>09_handoff_rule.md</code> 인수인계 템플릿</div>
+      <div class="ref-card">📋 <code>10_decision_log.md</code> 결정·미결정 로그</div>
+      <div class="ref-card">👥 <code>01~08_*_role.md</code> 역할 스펙</div>
+    </div>
+  </section>
+
+  <div class="footer">
+    PICKSOME OPS TOOL · Project Overview · 2026-06-17 · PM / Architect
+  </div>
+</div>
+</body>
+</html>

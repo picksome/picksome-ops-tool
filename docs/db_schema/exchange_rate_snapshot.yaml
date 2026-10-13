@@ -1,0 +1,56 @@
+table: exchange_rate_snapshot
+purpose: 환율 자동화(M008). 한국수출입은행 Open API 고시환율을 일자별로 스냅샷 적재.
+section: 3-B 정책 (D-288)
+decisions: [D-288]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: currency
+    type: TEXT
+    nullable: false
+    note: "'USD' 'CNY' 'JPY' 등. 중국 위안화는 국내 고시 관행상 API 상 CNH 로 오지만 CNY 로 정규화해 저장"
+  - name: rate_to_krw
+    type: NUMERIC(12,4)
+    nullable: false
+    note: 1통화단위당 KRW. JPY 처럼 100단위로 고시되는 통화는 조회 시 100으로 나눠 1단위로 정규화
+  - name: rate_date
+    type: DATE
+    nullable: false
+    note: 고시 기준일
+  - name: source
+    type: TEXT
+    nullable: false
+    default: "'MANUAL'"
+    note: KOREAEXIM_API / MANUAL
+  - name: fetched_at
+    type: TIMESTAMPTZ
+    nullable: false
+    default: now()
+
+audit_columns: false
+policy_columns: false
+
+notes: |
+  - org_id 없음(의도적) — 환율은 조직마다 다르지 않은 객관적 시장 데이터.
+  - product.cost_fx_rate(M005) 입력 시 services/product.py::_resolve_fx_rate() 가
+    이 테이블 최신값을 자동 채움 — 사용자가 직접 입력하면 그 값이 우선(override).
+  - 채워진 rate 는 product.cost_fx_rate 에 그대로 박제되므로, 이후 환율이 바뀌어도
+    과거 원가 계산은 입력 시점 값으로 재현됨(정책 박제 원칙과 동일 논리).
+
+constraints: []
+
+indexes:
+  - name: uq_exchange_rate_currency_date
+    type: UNIQUE
+    columns: [currency, rate_date]
+  - name: ix_exchange_rate_currency_date_desc
+    type: INDEX
+    columns: [currency, "rate_date DESC"]
+
+foreign_keys: []
+
+referenced_by: []

@@ -1,0 +1,63 @@
+table: marketplace_fee_policy
+purpose: 마켓플레이스별 판매수수료 정책. RATE/FIXED/TIERED 3 종 fee_type 지원.
+section: 3-B 정책
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: marketplace
+    type: TEXT
+    nullable: false
+    note: sale_channel.code 참조 (M007, D-287) — 앱 레벨 검증, DB ENUM 아님
+  - name: category_path
+    type: TEXT
+    nullable: true
+    note: 카테고리 경로 — NULL 이면 마켓 전체 적용
+  - name: fee_type
+    type: enum_marketplace_fee_type
+    nullable: false
+    enum_values: [RATE, FIXED, TIERED]
+  - name: rate
+    type: NUMERIC(7,4)
+    nullable: true
+    note: 4자리 소수 비율 (0.1234 = 12.34%)
+  - name: fixed_amount
+    type: BIGINT
+    nullable: true
+    note: 원 단위 정수 (KRW)
+  - name: tier_json
+    type: JSONB
+    nullable: true
+    note: TIERED 인 경우 구간별 수수료 정의
+
+audit_columns: true
+policy_columns: true
+
+constraints:
+  - name: ck_mfp_fee_value
+    type: CHECK
+    expression: |
+      (fee_type = 'RATE'   AND rate IS NOT NULL)
+       OR (fee_type = 'FIXED'  AND fixed_amount IS NOT NULL)
+       OR (fee_type = 'TIERED' AND tier_json IS NOT NULL)
+
+indexes:
+  - name: uq_mfp_org_mkt_cat_ver
+    type: UNIQUE
+    columns: [org_id, marketplace, "COALESCE(category_path, '')", version]
+    where: deleted_at IS NULL
+  - name: ix_mfp_org_mkt_eff
+    type: INDEX
+    columns: [org_id, marketplace, effective_from DESC]
+
+foreign_keys: []
+
+referenced_by: []
+
+notes: |
+  - 정책 박제 원칙: version + effective_from/to 로 과거 시점 재현. 변경은 INSERT (UPDATE 금지).
+  - SYSTEM 템플릿 organization 에 기본 row 적재 후 신규 조직은 INSERT...SELECT 복사.

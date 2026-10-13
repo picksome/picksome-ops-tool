@@ -1,0 +1,8 @@
+{$APP_HOST:localhost}:80 {
+    encode gzip zstd
+
+    @api path /api/*
+    reverse_proxy @api backend:8000
+
+    reverse_proxy frontend:3000
+}

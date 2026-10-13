@@ -1,0 +1,6 @@
+# Seller OS MCP 서버 전용 의존성.
+#
+# **backend 와 같은 환경에 설치하지 않는다.** 별도 venv 를 쓴다 —
+# 예전에 backend 전역 Python 에 mcp SDK 를 넣었다가 fastapi 가 깨질 뻔했다.
+mcp>=2.0
+httpx>=0.28

@@ -1,0 +1,105 @@
+name: picksome-ops-tool
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: Asia/Seoul
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backup:/backup
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-prod}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-720}
+      TZ: Asia/Seoul
+      APP_TIMEZONE: Asia/Seoul
+      APP_CURRENCY: KRW
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@picksome.local}
+      FEATURE_EXTERNAL_ACCOUNTANT: ${FEATURE_EXTERNAL_ACCOUNTANT:-false}
+      FEATURE_NOTIFICATION_KAKAO: ${FEATURE_NOTIFICATION_KAKAO:-false}
+      FEATURE_NOTIFICATION_SLACK: ${FEATURE_NOTIFICATION_SLACK:-false}
+      FEATURE_NOTIFICATION_TELEGRAM: ${FEATURE_NOTIFICATION_TELEGRAM:-false}
+      FEATURE_NOTIFICATION_WEBHOOK: ${FEATURE_NOTIFICATION_WEBHOOK:-false}
+      SETTLEMENT_REOPEN_LIMIT_DEFAULT: ${SETTLEMENT_REOPEN_LIMIT_DEFAULT:-3}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE: /api/v1
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Seoul
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      APP_HOST: ${APP_HOST:-localhost}
+    volumes:
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - internal
+
+volumes:
+  postgres-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  internal:
+    driver: bridge

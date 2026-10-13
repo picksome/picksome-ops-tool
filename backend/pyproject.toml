@@ -1,0 +1,71 @@
+[project]
+name = "picksome-ops-backend"
+version = "0.1.0"
+description = "PICKSOME OPS TOOL — backend (FastAPI + SQLAlchemy 2 + Alembic)"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "pydantic>=2.9",
+  "pydantic-settings>=2.6",
+  "sqlalchemy>=2.0.36",
+  "alembic>=1.14",
+  "psycopg[binary]>=3.2",
+  "argon2-cffi>=23.1",
+  # 네이버 커머스API 전자서명. client_secret 을 bcrypt salt 로 쓰는 공식 방식이라
+  # argon2 로 대체할 수 없다.
+  "bcrypt>=4.0",
+  "python-jose[cryptography]>=3.3",
+  "python-multipart>=0.0.12",
+  "uuid7>=0.1.0",
+  "openpyxl>=3.1",
+  "xlsxwriter>=3.2",
+  "email-validator>=2.2",
+  "httpx>=0.28",
+  "apscheduler>=3.10",
+  "pytz>=2024.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.24",
+  "pytest-cov>=6.0",
+  "ruff>=0.8",
+  "mypy>=1.13",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N"]
+# E501  줄 길이 — 한글 주석이 많아 기준이 맞지 않는다.
+# B008  `Depends(...)`/`Query(...)` 를 기본값에 두는 것은 FastAPI 의 정식 사용법이다.
+#       이 규칙을 켜 두면 라우터 전부가 위반이 되어 린트 결과를 아무도 안 보게 된다.
+ignore = ["E501", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# Alembic 은 파일명으로 리비전을 식별한다. 소문자로 바꾸면 마이그레이션이 깨진다.
+"app/db/migrations/versions/*" = ["N999", "N806"]
+# 테스트는 세션 팩토리(`Maker`)나 가짜 예외 클래스를 지역 변수로 만든다.
+# `pytest.raises(Exception)` 도 "무엇이든 실패해야 한다" 를 확인하는 자리에서는 맞다.
+"app/tests/*" = ["N806", "N818", "B017"]
+
+[tool.pytest.ini_options]
+testpaths = ["app/tests"]
+asyncio_mode = "auto"
+addopts = "-ra --strict-markers"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]

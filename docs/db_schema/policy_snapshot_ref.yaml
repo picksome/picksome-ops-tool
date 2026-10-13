@@ -1,0 +1,47 @@
+table: policy_snapshot_ref
+purpose: snapshot 에 포함된 개별 정책 row 의 참조 (table + row_id + version). 정규화된 형태.
+section: 3-B 정책 부속
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: snapshot_id
+    type: UUID
+    nullable: false
+  - name: policy_table
+    type: TEXT
+    nullable: false
+  - name: policy_row_id
+    type: UUID
+    nullable: false
+  - name: version
+    type: INT
+    nullable: false
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes:
+  - name: ix_psr_snapshot
+    type: INDEX
+    columns: [snapshot_id]
+  - name: ix_psr_row
+    type: INDEX
+    columns: [policy_table, policy_row_id]
+
+foreign_keys:
+  - column: snapshot_id
+    references: policy_snapshot.id
+    on_delete: CASCADE
+
+referenced_by: []
+
+notes: |
+  - snapshot 1건이 N개의 정책 row 를 참조. snapshot 삭제 시 CASCADE.
+  - 정책 row 가 soft delete 되어도 박제는 보존 (FK on policy_row_id 없음, 단순 ID 참조).

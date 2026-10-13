@@ -1,0 +1,45 @@
+table: tax_report_bundle_item
+purpose: 세무사 제출 묶음 안의 개별 리포트 파일 1개. 7종 MVP 리포트 (D-282) 각각.
+section: 3-I 세무사 export
+decisions: [D-282]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: bundle_id
+    type: UUID
+    nullable: false
+  - name: report_kind
+    type: TEXT
+    nullable: false
+    note: 리포트 종류 (e.g. "MONTHLY_SALES", "VAT_SUMMARY", "PARTNER_DISTRIBUTION", "EVIDENCE_MISSING")
+  - name: file_name
+    type: TEXT
+    nullable: false
+    note: 한국어 파일명 (e.g. "2026-06_월별매출리포트.xlsx")
+  - name: file_hash
+    type: TEXT
+    nullable: true
+  - name: generated_at
+    type: TIMESTAMPTZ
+    nullable: false
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys:
+  - column: bundle_id
+    references: tax_report_bundle.id
+
+referenced_by: []
+
+notes: |
+  - CLAUDE.md Tax Report: MVP 필수 7종 — 매출/매입/비용/판매처별/상품별/부가세참고/증빙누락.
+  - file_hash 로 동일 리포트 중복 생성 방지 가능.

@@ -1,0 +1,59 @@
+table: tax_report_bundle
+purpose: 세무사에게 제출한 리포트 묶음. 발송/수신 이력 추적.
+section: 3-I 세무사 export
+decisions: [D-282]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: org_id
+    type: UUID
+    nullable: false
+  - name: period_kind
+    type: TEXT
+    nullable: false
+    note: 기간 종류 (e.g. "MONTHLY", "QUARTERLY", "YEARLY")
+  - name: period_label
+    type: TEXT
+    nullable: false
+    note: 표시용 (e.g. "2026-06")
+  - name: sent_to_user_id
+    type: UUID
+    nullable: true
+    note: 수신자 — 세무사 (보통 EXTERNAL_ACCOUNTANT role). 발송 전 NULL
+  - name: sent_at
+    type: TIMESTAMPTZ
+    nullable: true
+  - name: received_at
+    type: TIMESTAMPTZ
+    nullable: true
+  - name: storage_path
+    type: TEXT
+    nullable: true
+  - name: memo
+    type: TEXT
+    nullable: true
+
+audit_columns: true
+policy_columns: false
+
+constraints: []
+
+indexes: []
+
+foreign_keys:
+  - column: org_id
+    references: organization.id
+  - column: sent_to_user_id
+    references: app_user.id
+    nullable: true
+
+referenced_by:
+  - tax_report_bundle_item.bundle_id
+
+notes: |
+  - D-282: MVP 7종 리포트. EXTERNAL_ACCOUNTANT 라우트 자체는 Post-MVP.
+  - MVP 에서는 내부 사용자가 Excel 다운로드 후 수동 전달. bundle 은 그 기록.

@@ -1,0 +1,64 @@
+# 환경변수 — 절대 커밋 금지
+.env
+.env.local
+.env.*.local
+
+# 백업 파일 (디렉토리 구조는 .gitkeep 으로 유지)
+# 백업 덤프 — **절대 커밋하지 않는다.**
+#
+# 덤프에는 판매·비용·정산 전부와 `credential_secret` 암호문이 들어 있다.
+# 암호문이라도 저장소에 올라가면 키가 유출된 날 전부 풀린다.
+#
+# 예전에는 `backup/*/*.sql.gz` 만 막고 있었다. 확장자(.dump)와 위치
+# (backend/backup/)가 조금만 달라도 새어 나간다 — 디렉터리 이름으로 막는다.
+backup/
+*.dump
+*.sql.gz
+
+# Caddy 인증서 데이터 (volume 마운트 시 로컬 바인드 사용하는 경우)
+infra/caddy-data/
+infra/caddy-config/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / Next.js
+node_modules/
+.next/
+frontend/.next/
+frontend/node_modules/
+*.tsbuildinfo
+
+# Docker
+*.tar
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 증빙 파일 로컬 저장소 (M027). 개발·E2E 산출물이라 커밋하지 않는다.
+backend/var/
+
+# 로컬 운영 런타임 (Local Operation Mode).
+#
+#   var/run/  프로세스 기록(pid·시작시각). PC 마다 다르고 재부팅하면 무의미하다
+#   var/log/  기동·종료·worker·따라잡기 로그. **재무 수치와 계정명이 들어 있다**
+#
+# 로그를 커밋하지 않는 것이 중요하다 — 개인정보는 걸러도 매출·정산 건수와
+# 외부 계정 표시명은 남는다.
+/var/
+
+
+# Playwright 실패 산출물(스크린샷·비디오·trace). 실행할 때마다 새로 생긴다.
+test-results/
+
+# Secrets — 절대 커밋 금지
+/secrets/*
+!/secrets/.gitkeep

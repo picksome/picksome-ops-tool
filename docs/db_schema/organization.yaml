@@ -1,0 +1,100 @@
+table: organization
+purpose: 사업자(조직) 마스터. 멀티테넌트의 루트 엔티티. 모든 운영 테이블이 org_id 로 격리.
+section: 3-A 조직/사용자
+decisions: [D-280, D-285]
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: business_name
+    type: TEXT
+    nullable: false
+  - name: business_no_masked
+    type: TEXT
+    nullable: true
+    note: 사업자등록번호는 마스킹 저장 (CLAUDE.md Security — 평문 금지)
+  - name: business_type
+    type: enum_business_type
+    nullable: false
+    default: JOINT_BUSINESS
+    enum_values: [SOLE_PROPRIETOR, JOINT_BUSINESS, CORPORATION, TEAM_OPERATION]
+    decision: D-280
+    note: 4종 사업자 형태 — 정산/세무 계산 분기 기준
+  - name: address
+    type: TEXT
+    nullable: true
+  - name: primary_currency
+    type: TEXT
+    nullable: false
+    default: "'KRW'"
+    note: MVP 는 KRW 만. 다국가 통화는 Post-MVP
+  - name: timezone
+    type: TEXT
+    nullable: false
+    default: "'Asia/Seoul'"
+  - name: settlement_reopen_limit
+    type: INT
+    nullable: false
+    default: 3
+    decision: D-285
+    note: REOPEN 한도. org 별 override 값. 0 = 무제한 금지(>=0)
+  - name: settings_json
+    type: JSONB
+    nullable: false
+    default: "'{}'"
+    note: 조직별 미세 설정. 스키마 검증은 앱 단
+
+audit_columns: true
+policy_columns: false
+
+constraints:
+  - name: ck_organization_reopen_limit
+    type: CHECK
+    expression: settlement_reopen_limit >= 0
+
+indexes: []
+
+foreign_keys: []
+
+referenced_by:
+  - app_user.org_id
+  - partner.org_id
+  - marketplace_fee_policy.org_id
+  - payment_fee_policy.org_id
+  - tax_policy.org_id
+  - fulfillment_fee_policy.org_id
+  - return_risk_policy.org_id
+  - ad_cost_policy.org_id
+  - target_margin_policy.org_id
+  - settlement_policy.org_id
+  - partner_share_policy.org_id
+  - expense_category_policy.org_id
+  - evidence_type_policy.org_id
+  - password_vault_entry.org_id
+  - external_partner.org_id
+  - product.org_id
+  - product_margin_expected.org_id
+  - sales_order.org_id
+  - marketplace_settlement_record.org_id
+  - product_margin_actual.org_id
+  - monthly_settlement.org_id
+  - loss_carryover_ledger.org_id
+  - settlement_reopen_audit.org_id
+  - expenses.org_id
+  - tax_report_bundle.org_id
+  - audit_log.org_id
+  - notification.org_id
+  - notification_pref.org_id
+  - integration_account.org_id
+
+notes: |
+  - SYSTEM 템플릿 sentinel: id = '00000000-0000-0000-0000-0000000000ff'
+    (M002 baseline 이 생성. business_name = '_SYSTEM_TEMPLATE')
+  - PICKSOME: id = '00000000-0000-0000-0000-000000000001'
+    (scripts/internal/picksome_init.py 가 적재 — SaaS 배포에는 미포함)
+  - 신규 SaaS 조직 가입 시 SYSTEM 템플릿의 정책 row 들을 INSERT...SELECT 로 복사
+    (8테이블: expense_category_policy, evidence_type_policy, tax_policy,
+     target_margin_policy, settlement_policy, marketplace_fee_policy 등).

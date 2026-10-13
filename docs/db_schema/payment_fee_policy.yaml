@@ -1,0 +1,37 @@
+table: payment_fee_policy
+purpose: 결제수단별 결제수수료율 정책. (BUSINESS_CARD, PERSONAL_CARD, BANK_TRANSFER 등)
+section: 3-B 정책
+decisions: []
+
+columns:
+  - name: id
+    type: UUID
+    nullable: false
+    primary_key: true
+    default: gen_random_uuid()
+  - name: method
+    type: enum_payment_method
+    nullable: false
+    enum_values: [BUSINESS_CARD, PERSONAL_CARD, BANK_TRANSFER, CASH, OTHER]
+  - name: rate
+    type: NUMERIC(7,4)
+    nullable: false
+    note: 4자리 소수 비율 (0.1234 = 12.34%)
+
+audit_columns: true
+policy_columns: true
+
+constraints: []
+
+indexes:
+  - name: uq_pfp_org_method_ver
+    type: UNIQUE
+    columns: [org_id, method, version]
+    where: deleted_at IS NULL
+
+foreign_keys: []
+
+referenced_by: []
+
+notes: |
+  - 결제수수료는 마진 계산의 입력. POLICY_COLS version 으로 과거 시점 박제.
